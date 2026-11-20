@@ -1,5 +1,5 @@
 """
-Headless MPFB2 Official 4K Asset Pack Installer for Kaggle / Colab Blender 4.2.3 LTS.
+Headless MPFB2 Official 4K Asset Pack Installer for Kaggle GPU T4 x2 (Blender 4.2.3 LTS).
 Extracts downloaded MakeHuman Community asset pack ZIPs cleanly into MPFB2's exact
 LocationService.get_user_data() directory and refreshes MPFB2's asset library cache.
 """
@@ -44,7 +44,8 @@ def main():
     os.makedirs(data_dir, exist_ok=True)
     print(f"[MPFB2 Packs] Target MPFB2 user data dir: {data_dir}")
 
-    pack_dir = os.environ.get("MPFB_PACKS_DIR", "/tmp/mpfb_packs")
+    default_dir = "/kaggle/working/.cache/mpfb_packs" if os.path.isdir("/kaggle/working") else "/tmp/mpfb_packs"
+    pack_dir = os.environ.get("MPFB_PACKS_DIR", default_dir)
     zips = sorted(glob.glob(os.path.join(pack_dir, "*.zip")))
     if not zips:
         print(f"[MPFB2 Packs] Warning: no zip files found in {pack_dir}")
