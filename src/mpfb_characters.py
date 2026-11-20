@@ -135,6 +135,34 @@ def _tune_procedural_eyes(eye_obj, major_rgb=(0.14, 0.36, 0.20), minor_rgb=(0.06
                     node.inputs["Clearcoat"].default_value = 0.85
 
 
+def _find_principled_nodes(nt, visited_trees=None):
+    """Find all (node_tree, bsdf_node) pairs inside a material, copying any shared ShaderNodeGroup
+    so grading one character's suit/hair never mutates another character's material."""
+    if visited_trees is None:
+        visited_trees = set()
+    if nt is None or id(nt) in visited_trees:
+        return []
+    visited_trees.add(id(nt))
+    found = []
+    for node in nt.nodes:
+        if node.type == "BSDF_PRINCIPLED":
+            found.append((nt, node))
+        elif node.type == "GROUP" and getattr(node, "node_tree", None) is not None:
+            if node.node_tree.users > 1:
+                node.node_tree = node.node_tree.copy()
+            found.extend(_find_principled_nodes(node.node_tree, visited_trees))
+    return found
+
+
+def _get_rgba_mix_sockets(mix_node):
+    """In Blender 4.x, ShaderNodeMix has duplicate 'A'/'B'/'Result' sockets (Float, Vector, RGBA).
+    Always pick the true RGBA color sockets by socket.type == 'RGBA'."""
+    rgba_in = [s for s in mix_node.inputs if s.type == "RGBA"]
+    rgba_out = [s for s in mix_node.outputs if s.type == "RGBA"]
+    fac_in = mix_node.inputs[0]
+    return fac_in, rgba_in[0], rgba_in[1], rgba_out[0]
+
+
 def _tint_asset_material(
     obj,
     tint_rgb: tuple[float, float, float] | None = None,
@@ -151,55 +179,58 @@ def _tint_asset_material(
         mat = slot.material
         if not mat or not mat.use_nodes or not mat.node_tree:
             continue
-        nt = mat.node_tree
-        bsdf = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
-        if bsdf is None:
-            continue
-        bc = bsdf.inputs.get("Base Color")
-        if bc is None:
-            continue
+        if mat.users > 1:
+            mat = mat.copy()
+            slot.material = mat
+        for nt, bsdf in _find_principled_nodes(mat.node_tree):
+            bc = bsdf.inputs.get("Base Color")
+            if bc is None:
+                continue
 
-        if is_hair:
-            _set_bsdf(bsdf, "Roughness", roughness_override if roughness_override is not None else 0.46)
-            _set_bsdf(bsdf, "Coat Weight", 0.16)
-            _set_bsdf(bsdf, "Sheen Weight", 0.35)
-        else:
-            if roughness_override is not None and not bsdf.inputs["Roughness"].is_linked:
-                _set_bsdf(bsdf, "Roughness", roughness_override)
-            _set_bsdf(bsdf, "Sheen Weight", 0.45)
+            if is_hair:
+                _set_bsdf(bsdf, "Roughness", roughness_override if roughness_override is not None else 0.46)
+                _set_bsdf(bsdf, "Coat Weight", 0.16)
+                _set_bsdf(bsdf, "Sheen Weight", 0.35)
+            else:
+                if roughness_override is not None and not bsdf.inputs["Roughness"].is_linked:
+                    _set_bsdf(bsdf, "Roughness", roughness_override)
+                _set_bsdf(bsdf, "Sheen Weight", 0.45)
 
-        if silver_hair and bc.is_linked:
-            # Photoreal salt-and-pepper silver via HSV (keeps 100% of individual alpha strand highlights & shadows!)
-            src_socket = bc.links[0].from_socket
-            nt.links.remove(bc.links[0])
-            hsv = nt.nodes.new("ShaderNodeHueSaturation")
-            hsv.inputs["Saturation"].default_value = 0.10
-            hsv.inputs["Value"].default_value = 1.65
-            nt.links.new(src_socket, hsv.inputs["Color"])
-            nt.links.new(hsv.outputs["Color"], bc)
-            continue
+            try:
+                if silver_hair and bc.is_linked:
+                    src_socket = bc.links[0].from_socket
+                    nt.links.remove(bc.links[0])
+                    hsv = nt.nodes.new("ShaderNodeHueSaturation")
+                    hsv.inputs["Saturation"].default_value = 0.10
+                    hsv.inputs["Value"].default_value = 1.65
+                    nt.links.new(src_socket, hsv.inputs["Color"])
+                    nt.links.new(hsv.outputs["Color"], bc)
+                    continue
 
-        if tint_rgb is None or mix_fac <= 0.0:
-            continue
+                if tint_rgb is None or mix_fac <= 0.0:
+                    continue
 
-        if bc.is_linked:
-            src_socket = bc.links[0].from_socket
-            nt.links.remove(bc.links[0])
-            mix = nt.nodes.new("ShaderNodeMix")
-            mix.data_type = "RGBA"
-            mix.blend_type = "MULTIPLY"
-            mix.inputs["Factor"].default_value = mix_fac
-            mix.inputs["B"].default_value = (*tint_rgb, 1.0)
-            nt.links.new(src_socket, mix.inputs["A"])
-            nt.links.new(mix.outputs["Result"], bc)
-        else:
-            orig = bc.default_value
-            bc.default_value = (
-                orig[0] * (1.0 - mix_fac) + tint_rgb[0] * mix_fac,
-                orig[1] * (1.0 - mix_fac) + tint_rgb[1] * mix_fac,
-                orig[2] * (1.0 - mix_fac) + tint_rgb[2] * mix_fac,
-                1.0,
-            )
+                if bc.is_linked:
+                    src_socket = bc.links[0].from_socket
+                    nt.links.remove(bc.links[0])
+                    mix = nt.nodes.new("ShaderNodeMix")
+                    mix.data_type = "RGBA"
+                    mix.blend_type = "MULTIPLY"
+                    fac_in, col_a, col_b, col_out = _get_rgba_mix_sockets(mix)
+                    fac_in.default_value = mix_fac
+                    col_b.default_value = (*tint_rgb, 1.0)
+                    nt.links.new(src_socket, col_a)
+                    nt.links.new(col_out, bc)
+                else:
+                    orig = bc.default_value
+                    bc.default_value = (
+                        orig[0] * (1.0 - mix_fac) + tint_rgb[0] * mix_fac,
+                        orig[1] * (1.0 - mix_fac) + tint_rgb[1] * mix_fac,
+                        orig[2] * (1.0 - mix_fac) + tint_rgb[2] * mix_fac,
+                        1.0,
+                    )
+            except Exception as tint_err:
+                print(f"[MPFB2 Tint Warning] {obj.name}/{mat.name}: {tint_err}")
 
 
 # ============================================================================
