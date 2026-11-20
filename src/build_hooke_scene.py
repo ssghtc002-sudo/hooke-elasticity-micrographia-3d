@@ -29,6 +29,7 @@ import json
 import math
 import os
 import sys
+import time
 
 import bpy
 from mathutils import Euler, Quaternion, Vector
@@ -48,7 +49,7 @@ def parse_args():
     p.add_argument("--start-frame", type=int, default=1)
     p.add_argument("--end-frame", type=int, default=720)
     p.add_argument("--fps", type=int, default=int(os.environ.get("HOOKE_FPS", "24")))
-    p.add_argument("--samples", type=int, default=int(os.environ.get("HOOKE_SAMPLES", "12")))
+    p.add_argument("--samples", type=int, default=int(os.environ.get("HOOKE_SAMPLES", "10")))
     p.add_argument("--scale", type=int, default=int(os.environ.get("HOOKE_SCALE", "75")))
     p.add_argument("--out-dir", type=str, default=os.environ.get("HOOKE_FRAMES_DIR", "render_frames"))
     p.add_argument("--qa-only", action="store_true", help="Render 6 hero Beat keyframes to qa_frames/")
@@ -325,16 +326,41 @@ def make_emissive_mat(name, rgb, strength=4.8):
 
 
 def make_cork_cell_mat():
-    """Translucent golden-amber organic cork cell wall shader (Micrographia bio-glow!)."""
+    """High-contrast sculpted golden-amber honeycomb cell walls (crisp individual Micrographia cells, zero washout!)."""
     mat = bpy.data.materials.new("MicrographiaCorkCell")
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
-    set_bsdf(bsdf, "Base Color", (0.94, 0.62, 0.16, 1.0))
-    set_bsdf(bsdf, "Roughness", 0.28)
-    set_bsdf(bsdf, "Transmission Weight", 0.45)
-    set_bsdf(bsdf, "IOR", 1.44)
-    set_bsdf(bsdf, "Emission Color", (0.98, 0.56, 0.10, 1.0))
-    set_bsdf(bsdf, "Emission Strength", 1.35)
+    set_bsdf(bsdf, "Base Color", (0.82, 0.44, 0.08, 1.0))
+    set_bsdf(bsdf, "Metallic", 0.20)
+    set_bsdf(bsdf, "Roughness", 0.26)
+    set_bsdf(bsdf, "Emission Color", (0.95, 0.50, 0.08, 1.0))
+    set_bsdf(bsdf, "Emission Strength", 0.65)
+    return mat
+
+
+def make_london_night_sky_mat():
+    """Luminous deep sapphire-indigo moonlit London twilight backdrop behind mullioned Royal Society window!"""
+    mat = bpy.data.materials.new("LondonMoonlitSky")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    em = nt.nodes.new("ShaderNodeEmission")
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    rmp = nt.nodes.new("ShaderNodeValToRGB")
+    cr = rmp.color_ramp
+    cr.elements[0].position = 0.0
+    cr.elements[0].color = (0.04, 0.09, 0.19, 1.0)
+    e1 = cr.elements.new(0.55)
+    e1.color = (0.06, 0.16, 0.34, 1.0)
+    cr.elements[-1].position = 1.0
+    cr.elements[-1].color = (0.14, 0.28, 0.50, 1.0)
+    em.inputs["Strength"].default_value = 1.45
+    nt.links.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    nt.links.new(sep.outputs["Z"], rmp.inputs["Fac"])
+    nt.links.new(rmp.outputs["Color"], em.inputs["Color"])
+    nt.links.new(em.outputs["Emission"], out.inputs["Surface"])
     return mat
 
 
@@ -352,6 +378,8 @@ parchment_mat = make_metal_mat("MicrographiaPage", (0.92, 0.85, 0.68), rough=0.6
 ruby_jewel_mat = make_glass_mat("WatchRubyJewel", ior=1.77, tint=(0.95, 0.08, 0.16), rough=0.01, coat=0.7)
 lens_glass_mat = make_glass_mat("MicroscopeGlass", ior=1.52, tint=(0.90, 0.98, 1.0), rough=0.01, coat=0.5)
 cork_cell_mat = make_cork_cell_mat()
+cork_backplate_mat = make_metal_mat("CorkBacklitDisc", (0.015, 0.06, 0.055), rough=0.32, metallic=0.1, bump_str=0.0)
+night_sky_mat = make_london_night_sky_mat()
 
 book_mats = [
     crimson_leather_mat,
@@ -570,28 +598,34 @@ def orient_beam(obj, p1: Vector, p2: Vector, radius_scale: float = 1.0):
 
 
 # ============================================================================
-# 6. BUILD 1665 ROYAL SOCIETY OF LONDON LABORATORY STAGE
+# 6. BUILD 1665 ROYAL SOCIETY OF LONDON LABORATORY STAGE (V3 CINEMA GRADE!)
 # ============================================================================
 world = bpy.data.worlds.new("LondonTwilightLab")
 scene.world = world
 world.use_nodes = True
 bg = world.node_tree.nodes["Background"]
-bg.inputs["Color"].default_value = (0.010, 0.024, 0.032, 1.0)  # Deep London emerald-indigo twilight
-bg.inputs["Strength"].default_value = 0.65
+bg.inputs["Color"].default_value = (0.014, 0.032, 0.052, 1.0)  # Deep London sapphire twilight
+bg.inputs["Strength"].default_value = 0.72
 
-# Polished Stuart Mahogany Workbench (top Z = 0.0, Y in [-0.52, +0.42] so 1.74m characters stand cleanly behind at Y=+0.66!)
-add_box("MahoganyBench", (0.0, -0.05, -0.07), (4.8, 0.94, 0.14), mahogany_mat, bevel_w=0.008)
-add_box("BenchBrassEdge", (0.0, -0.525, -0.025), (4.82, 0.028, 0.044), brass_mat, bevel_w=0.004)
-# Real Wooden Observatory Floor at Z = -0.96m (exact waist-high laboratory workbench!)
+# Polished Stuart Mahogany Workbench (top Z = 0.0, Y in [-0.54, +0.34] so 1.74m characters stand cleanly waist-high at Y=+0.50!)
+add_box("MahoganyBench", (0.0, -0.10, -0.06), (5.8, 0.88, 0.12), mahogany_mat, bevel_w=0.008)
+add_box("BenchBrassEdge", (0.0, -0.545, -0.022), (5.82, 0.028, 0.044), brass_mat, bevel_w=0.004)
+# Solid Paneled Mahogany Laboratory Cabinet Front (Z = -0.96..-0.12 -> ZERO dangling legs under bench!)
 FLOOR_Z = -0.96
-add_box("LabWoodFloor", (0.0, 0.50, FLOOR_Z - 0.05), (6.4, 4.6, 0.10), panel_wood_mat)
+add_box("BenchCabinetBody", (0.0, -0.12, -0.54), (5.6, 0.80, 0.84), panel_wood_mat)
+for dr_x in (-1.65, -0.82, 0.0, 0.82, 1.65):
+    add_box(f"BenchDrawerPanel_{dr_x:.2f}", (dr_x, -0.525, -0.34), (0.68, 0.024, 0.34), mahogany_mat, bevel_w=0.006)
+    add_torus(f"BenchDrawerPull_{dr_x:.2f}", (dr_x, -0.545, -0.34), 0.032, 0.006, brass_mat, rot=(math.pi * 0.5, 0, 0))
+add_box("LabWoodFloor", (0.0, 0.50, FLOOR_Z - 0.05), (7.6, 4.8, 0.10), panel_wood_mat)
 
-# London Brick & Oak-Paneled Back Wall with Arched Leaded Window
-add_box("BrickWallLeft", (-2.00, 1.95, 1.55), (2.1, 0.24, 4.2), brick_mat)
-add_box("BrickWallRight", (2.00, 1.95, 1.55), (2.1, 0.24, 4.2), brick_mat)
+# London Brick & Oak-Paneled Back Wall with Arched Leaded Window & Luminous Moonlit London Sky!
+add_box("BrickWallLeft", (-2.45, 1.95, 1.55), (3.0, 0.24, 4.2), brick_mat)
+add_box("BrickWallRight", (2.45, 1.95, 1.55), (3.0, 0.24, 4.2), brick_mat)
 add_box("BrickWallLower", (0.0, 1.95, 0.22), (2.2, 0.24, 1.05), brick_mat)
 add_box("BrickWallHeader", (0.0, 1.95, 2.75), (2.4, 0.24, 1.15), brick_mat)
-add_box("MahoganyWainscot", (0.0, 1.81, 0.36), (5.6, 0.06, 0.72), panel_wood_mat, bevel_w=0.006)
+# Luminous Sapphire-Indigo Moonlit London Night Sky behind leaded window (zero flat pitch-black rectangle!)
+add_box("LondonMoonlitSkyPlane", (0.0, 2.38, 1.55), (2.6, 0.04, 2.2), night_sky_mat)
+add_box("MahoganyWainscot", (0.0, 1.81, 0.36), (7.2, 0.06, 0.72), panel_wood_mat, bevel_w=0.006)
 add_box("WindowSill", (0.0, 1.79, 0.74), (2.12, 0.14, 0.055), mahogany_mat, bevel_w=0.006)
 for sx in (-0.98, 0.98):
     add_cyl(f"LabColumn_{sx}", (sx, 1.78, 1.48), 0.11, 3.6, panel_wood_mat, verts=28)
@@ -600,25 +634,25 @@ add_box("WindowMullionV", (0.0, 1.92, 1.48), (0.038, 0.044, 1.65), iron_mat)
 add_box("WindowMullionH1", (0.0, 1.92, 1.24), (1.92, 0.044, 0.034), iron_mat)
 add_box("WindowMullionH2", (0.0, 1.92, 1.74), (1.92, 0.044, 0.034), iron_mat)
 
-# Royal Society Library Bookshelves (Left & Right walls -> warm museum bokeh!)
-for side_idx, bx in enumerate((-1.56, 1.58)):
-    add_box(f"CaseBack_{side_idx}", (bx, 1.72, 1.22), (0.86, 0.04, 1.42), panel_wood_mat)
+# Royal Society Library Bookshelves spanning full bench backdrop (rich bokeh in Beats 1-6!)
+for side_idx, bx in enumerate((-2.36, -1.52, 1.54, 2.38)):
+    add_box(f"CaseBack_{side_idx}", (bx, 1.72, 1.22), (0.82, 0.04, 1.42), panel_wood_mat)
     for sz in (0.76, 1.14, 1.52, 1.88):
-        add_box(f"CaseShelf_{side_idx}_{sz:.2f}", (bx, 1.60, sz), (0.88, 0.24, 0.035), mahogany_mat)
+        add_box(f"CaseShelf_{side_idx}_{sz:.2f}", (bx, 1.60, sz), (0.84, 0.24, 0.035), mahogany_mat)
     for row_idx, rz in enumerate((0.88, 1.26, 1.64)):
-        for k in range(7):
+        for k in range(6):
             bh = 0.20 + ((k * 3 + row_idx) % 4) * 0.022
-            bt = 0.044 + (k % 2) * 0.010
+            bt = 0.046 + (k % 2) * 0.010
             add_box(
                 f"Tome_{side_idx}_{row_idx}_{k}",
-                (bx - 0.32 + k * 0.105, 1.60, rz + bh * 0.5 - 0.10),
+                (bx - 0.28 + k * 0.112, 1.60, rz + bh * 0.5 - 0.10),
                 (bt, 0.16, bh),
                 book_mats[(k + row_idx + side_idx) % len(book_mats)],
             )
 
-# Warm London Brass Oil Lamps on outer bench corners
+# Warm London Brass Oil Lamps on outer bench edges (clear of every actor!)
 lamp_flames = []
-for idx, (lx, ly) in enumerate([(-1.38, 0.52), (1.42, 0.48)]):
+for idx, (lx, ly) in enumerate([(-2.02, 0.20), (1.88, 0.20)]):
     add_cyl(f"LampBase_{idx}", (lx, ly, 0.015), 0.075, 0.030, brass_mat, bevel_w=0.004)
     add_cyl(f"LampBody_{idx}", (lx, ly, 0.085), 0.048, 0.11, brass_mat, bevel_w=0.005)
     add_cyl(f"LampChimney_{idx}", (lx, ly, 0.205), 0.036, 0.14, lens_glass_mat)
@@ -627,9 +661,9 @@ for idx, (lx, ly) in enumerate([(-1.38, 0.52), (1.42, 0.48)]):
 
 
 # ============================================================================
-# 7. ZONE A (CENTER-LEFT): HOOKE'S LAW HELICAL SPRING RIG & SECRET CIPHER!
+# 7. ZONE A (MID-LEFT X=-0.78): HOOKE'S LAW HELICAL SPRING RIG + CENTER CIPHER!
 # ============================================================================
-RIG_X, RIG_Y = -0.34, -0.04
+RIG_X, RIG_Y = -0.78, -0.10
 # Heavy Cast-Iron & Brass Gallows Stand (Z = 0..0.72)
 add_box("SpringRigBase", (RIG_X, RIG_Y, 0.018), (0.42, 0.28, 0.036), iron_mat, bevel_w=0.005)
 add_cyl("SpringRigPost", (RIG_X - 0.14, RIG_Y, 0.365), 0.016, 0.68, brass_mat, verts=32)
@@ -639,7 +673,7 @@ add_cyl("SpringAnchorHook", (RIG_X + 0.08, RIG_Y, 0.665), 0.016, 0.022, bronze_m
 
 # Vertical Glowing Calibrated Extension Ruler right beside the spring!
 RULER_X = RIG_X + 0.20
-add_box("BrassRulerPlate", (RULER_X, RIG_Y, 0.34), (0.042, 0.012, 0.60), dark_iron_mat := iron_mat, bevel_w=0.002)
+add_box("BrassRulerPlate", (RULER_X, RIG_Y, 0.34), (0.042, 0.012, 0.60), iron_mat, bevel_w=0.002)
 add_box("BrassRulerTrim", (RULER_X, RIG_Y + 0.005, 0.34), (0.052, 0.008, 0.615), brass_mat, bevel_w=0.002)
 for tick_i in range(9):
     tz = 0.10 + tick_i * 0.060
@@ -677,76 +711,81 @@ w2.parent = weight_pan
 w2_band = add_torus("Weight2GlowBand", (0, 0, -0.118), 0.039, 0.0035, cyan_glow_mat)
 w2_band.parent = weight_pan
 
-# Crimson Leather-Bound *Micrographia* Folio + Floating 3D Secret Anagram ('ceiiinosssttuv') -> 'F = -kx'!
-FOLIO_POS = Vector((0.26, -0.04, 0.0))
-add_box("MicrographiaCover", (FOLIO_POS.x, FOLIO_POS.y, 0.024), (0.34, 0.26, 0.048), crimson_leather_mat, rot=(0, 0, -0.10), bevel_w=0.005)
-add_box("MicrographiaPages", (FOLIO_POS.x + 0.004, FOLIO_POS.y, 0.024), (0.325, 0.245, 0.038), parchment_mat, rot=(0, 0, -0.10))
-add_box("MicrographiaClasp1", (FOLIO_POS.x - 0.165, FOLIO_POS.y + 0.06, 0.024), (0.022, 0.032, 0.052), brass_mat, rot=(0, 0, -0.10))
-add_box("MicrographiaClasp2", (FOLIO_POS.x - 0.165, FOLIO_POS.y - 0.06, 0.024), (0.022, 0.032, 0.052), brass_mat, rot=(0, 0, -0.10))
+# Crimson Leather-Bound *Micrographia* Folio + Floating 3D Secret Anagram ('ceiiinosssttuv') -> 'F = -kx' at CLEAN CENTER!
+FOLIO_POS = Vector((0.00, -0.10, 0.0))
+add_box("MicrographiaCover", (FOLIO_POS.x, FOLIO_POS.y, 0.024), (0.36, 0.26, 0.048), crimson_leather_mat, rot=(0, 0, -0.04), bevel_w=0.005)
+add_box("MicrographiaPages", (FOLIO_POS.x + 0.004, FOLIO_POS.y, 0.024), (0.345, 0.245, 0.038), parchment_mat, rot=(0, 0, -0.04))
+add_box("MicrographiaClasp1", (FOLIO_POS.x - 0.175, FOLIO_POS.y + 0.06, 0.024), (0.022, 0.032, 0.052), brass_mat, rot=(0, 0, -0.04))
+add_box("MicrographiaClasp2", (FOLIO_POS.x - 0.175, FOLIO_POS.y - 0.06, 0.024), (0.022, 0.032, 0.052), brass_mat, rot=(0, 0, -0.04))
 
 # Floating 3D Anagram Text (Beat 2a: 4.5-7.1s) -> Snaps into Glowing 3D 'F = -kx' (Beat 2b & Finale!)
-bpy.ops.object.text_add(location=(FOLIO_POS.x, FOLIO_POS.y, 0.26), rotation=(math.pi * 0.5, 0.0, -0.08))
+bpy.ops.object.text_add(location=(FOLIO_POS.x, FOLIO_POS.y, 0.26), rotation=(math.pi * 0.5, 0.0, 0.0))
 anagram_txt = bpy.context.active_object
 anagram_txt.name = "HookeAnagramCipher"
 anagram_txt.data.body = "ceiiinosssttuv"
 anagram_txt.data.align_x = "CENTER"
-anagram_txt.data.size = 0.068
-anagram_txt.data.extrude = 0.008
+anagram_txt.data.size = 0.072
+anagram_txt.data.extrude = 0.010
 anagram_txt.data.bevel_depth = 0.002
 anagram_txt.data.materials.append(gold_glow_mat)
 
-bpy.ops.object.text_add(location=(FOLIO_POS.x, FOLIO_POS.y, 0.28), rotation=(math.pi * 0.5, 0.0, -0.08))
+bpy.ops.object.text_add(location=(FOLIO_POS.x, FOLIO_POS.y, 0.28), rotation=(math.pi * 0.5, 0.0, 0.0))
 formula_txt = bpy.context.active_object
 formula_txt.name = "HookeFormula3D"
 formula_txt.data.body = "F = -kx"
 formula_txt.data.align_x = "CENTER"
-formula_txt.data.size = 0.115
-formula_txt.data.extrude = 0.014
+formula_txt.data.size = 0.125
+formula_txt.data.extrude = 0.016
 formula_txt.data.bevel_depth = 0.003
 formula_txt.data.materials.append(cyan_glow_mat)
 
 
 # ============================================================================
-# 8. ZONE B (LEFT-MID): 1665 COMPOUND MICROSCOPE & GLOWING HEXAGONAL CORK CELLS!
+# 8. ZONE B (FAR-LEFT X=-1.62): 1665 COMPOUND MICROSCOPE & CRISP HEXAGONAL CORK CELLS!
 # ============================================================================
-MIC_POS = Vector((-0.88, 0.34, 0.0))
-# Ornate Stuart Brass Tripod Foot + Vertical Pillar + Stage Plate
-add_cyl("MicroscopeBase", (MIC_POS.x, MIC_POS.y, 0.018), 0.145, 0.036, brass_mat, verts=48, bevel_w=0.005)
-add_cyl("MicroscopePillar", (MIC_POS.x - 0.065, MIC_POS.y + 0.03, 0.23), 0.015, 0.42, brass_mat, verts=28)
-add_cyl("MicroscopeStage", (MIC_POS.x + 0.02, MIC_POS.y, 0.125), 0.085, 0.014, bronze_mat, verts=40, bevel_w=0.003)
+MIC_POS = Vector((-1.62, -0.06, 0.0))
+add_cyl("MicroscopeBase", (MIC_POS.x, MIC_POS.y, 0.018), 0.135, 0.036, brass_mat, verts=48, bevel_w=0.005)
+add_cyl("MicroscopePillar", (MIC_POS.x - 0.060, MIC_POS.y + 0.03, 0.22), 0.015, 0.40, brass_mat, verts=28)
+add_cyl("MicroscopeStage", (MIC_POS.x + 0.02, MIC_POS.y, 0.125), 0.082, 0.014, bronze_mat, verts=40, bevel_w=0.003)
 
-# Tilted Gold-Tooled Crimson Leather & Brass Compound Microscope Barrel!
-bpy.ops.object.empty_add(type="PLAIN_AXES", location=(MIC_POS.x + 0.02, MIC_POS.y, 0.27), rotation=(0.0, math.radians(-20.0), math.radians(-12.0)))
+bpy.ops.object.empty_add(type="PLAIN_AXES", location=(MIC_POS.x + 0.02, MIC_POS.y, 0.26), rotation=(0.0, math.radians(-18.0), math.radians(-10.0)))
 mic_barrel_piv = bpy.context.active_object
 mic_barrel_piv.name = "MicroscopeBarrelPivot"
-mb_main = add_cyl("MicroscopeLeatherTube", (0, 0, 0.04), 0.044, 0.24, crimson_leather_mat, verts=40)
+mb_main = add_cyl("MicroscopeLeatherTube", (0, 0, 0.04), 0.044, 0.23, crimson_leather_mat, verts=40)
 mb_main.parent = mic_barrel_piv
-for rz in (-0.08, 0.04, 0.16):
+for rz in (-0.075, 0.04, 0.155):
     mr = add_torus(f"MicroscopeRing_{rz:.2f}", (0, 0, rz), 0.045, 0.006, brass_mat)
     mr.parent = mic_barrel_piv
-mb_snout = add_cone("MicroscopeObjective", (0, 0, -0.11), 0.018, 0.034, 0.09, brass_mat)
+mb_snout = add_cone("MicroscopeObjective", (0, 0, -0.105), 0.018, 0.034, 0.085, brass_mat)
 mb_snout.parent = mic_barrel_piv
-mb_eye = add_cyl("MicroscopeEyepiece", (0, 0, 0.195), 0.032, 0.065, brass_mat, bevel_w=0.003)
+mb_eye = add_cyl("MicroscopeEyepiece", (0, 0, 0.19), 0.032, 0.062, brass_mat, bevel_w=0.003)
 mb_eye.parent = mic_barrel_piv
-mb_lens = add_sphere("MicroscopeTopLens", (0, 0, 0.225), 0.024, lens_glass_mat, segs=24, rings=14)
+mb_lens = add_sphere("MicroscopeTopLens", (0, 0, 0.22), 0.024, lens_glass_mat, segs=24, rings=14)
 mb_lens.scale = (1.0, 1.0, 0.45)
 mb_lens.parent = mic_barrel_piv
 
-# Iconic Hooke Water-Filled Glass Condenser Globe beside Microscope (focuses warm candlelight!)
-add_cyl("CondenserFoot", (MIC_POS.x + 0.20, MIC_POS.y - 0.06, 0.014), 0.044, 0.028, brass_mat, bevel_w=0.003)
-add_cyl("CondenserStem", (MIC_POS.x + 0.20, MIC_POS.y - 0.06, 0.075), 0.010, 0.10, brass_mat)
-add_sphere("CondenserGlobe", (MIC_POS.x + 0.20, MIC_POS.y - 0.06, 0.165), 0.056, lens_glass_mat, segs=32, rings=20)
+# Iconic Hooke Water-Filled Glass Condenser Globe beside Microscope
+add_cyl("CondenserFoot", (MIC_POS.x + 0.18, MIC_POS.y - 0.05, 0.014), 0.042, 0.028, brass_mat, bevel_w=0.003)
+add_cyl("CondenserStem", (MIC_POS.x + 0.18, MIC_POS.y - 0.05, 0.072), 0.010, 0.095, brass_mat)
+add_sphere("CondenserGlobe", (MIC_POS.x + 0.18, MIC_POS.y - 0.05, 0.158), 0.052, lens_glass_mat, segs=32, rings=20)
 
-# GORGEOUS TRANSLUCENT AMBER-GOLD 3D HONEYCOMB CORK 'CELLS' HOLOGRAM (Rising above microscope stage in Beat 3!)
-CELLS_BASE = Vector((MIC_POS.x + 0.04, MIC_POS.y - 0.02, 0.46))
-cork_cells_mesh = build_hex_cell_lattice("MicrographiaCorkCells", CELLS_BASE, rings=3, cell_r=0.034, wall_h=0.044, mat=cork_cell_mat)
-cork_cells_mesh.rotation_euler = Euler((math.radians(48.0), 0.0, math.radians(15.0)))
+# CRISP HIGH-CONTRAST 37 HEXAGONAL CORK 'CELLS' MICROSCOPE PROJECTION (Dark Emerald Backplate + Golden Honeycomb Walls!)
+CELLS_BASE = Vector((MIC_POS.x + 0.02, MIC_POS.y, 0.46))
+bpy.ops.object.empty_add(type="PLAIN_AXES", location=CELLS_BASE, rotation=(math.radians(74.0), 0.0, math.radians(-10.0)))
+cork_cells_group = bpy.context.active_object
+cork_cells_group.name = "MicrographiaCorkCellsGroup"
+cork_backplate = add_cyl("CorkBackplateDisc", (0, 0, -0.006), 0.165, 0.008, cork_backplate_mat, verts=48)
+cork_backplate.parent = cork_cells_group
+cork_rim = add_torus("CorkScopeRing", (0, 0, 0.004), 0.168, 0.009, brass_mat, maj_seg=48, min_seg=12)
+cork_rim.parent = cork_cells_group
+cork_cells_mesh = build_hex_cell_lattice("MicrographiaCorkCells", (0, 0, 0.0), rings=2, cell_r=0.036, wall_h=0.028, mat=cork_cell_mat)
+cork_cells_mesh.parent = cork_cells_group
 
 
 # ============================================================================
-# 9. ZONE C (RIGHT): OVERLOAD ELASTIC-LIMIT TEST SPRING (BEAT 4 SNAP TWIST!)
+# 9. ZONE C (FAR-RIGHT X=+1.42): OVERLOAD ELASTIC-LIMIT TEST SPRING (BEAT 4 SNAP TWIST!)
 # ============================================================================
-OVER_X, OVER_Y = 0.94, -0.02
+OVER_X, OVER_Y = 1.42, -0.08
 add_box("OverloadBase", (OVER_X, OVER_Y, 0.018), (0.38, 0.26, 0.036), iron_mat, bevel_w=0.005)
 add_cyl("OverloadPost", (OVER_X + 0.13, OVER_Y, 0.34), 0.015, 0.64, bronze_mat, verts=28)
 add_box("OverloadArm", (OVER_X + 0.03, OVER_Y, 0.645), (0.24, 0.024, 0.024), bronze_mat, bevel_w=0.004)
@@ -761,7 +800,6 @@ overload_spring = build_helical_spring(
     wire_r=0.0052,
     mat=brass_mat,
 )
-# Hot copper glowing warning collar & heavy crimson-iron overload weight!
 overload_glow_coil = build_helical_spring(
     "OverloadGlowCoil",
     (OVER_X - 0.04, OVER_Y, OVER_TOP_Z),
@@ -774,63 +812,70 @@ overload_glow_coil = build_helical_spring(
 overload_weight = add_cyl("OverloadHeavyWeight", (OVER_X - 0.04, OVER_Y, 0.34), 0.068, 0.105, iron_mat, bevel_w=0.006)
 overload_ring = add_torus("OverloadWeightBand", (OVER_X - 0.04, OVER_Y, 0.34), 0.070, 0.006, hot_copper_mat)
 
-# 16 Metallic Snap Sparks bursting outward at t = 17.65s!
 snap_sparks = []
 for i in range(16):
-    sp = add_sphere(f"SnapSpark_{i}", (OVER_X - 0.04, OVER_Y, 0.42), 0.012, hot_copper_mat if i % 2 == 0 else gold_glow_mat, segs=12, rings=8)
+    sp = add_sphere(f"SnapSpark_{i}", (OVER_X - 0.04, OVER_Y, 0.42), 0.013, hot_copper_mat if i % 2 == 0 else gold_glow_mat, segs=12, rings=8)
     snap_sparks.append(sp)
 
 
 # ============================================================================
-# 10. ZONE D (CENTER-REAR): GIANT SKELETONIZED BRASS POCKET WATCH (BEAT 5 HERO!)
+# 10. ZONE D (BEATS 5-6 HERO): GIANT SKELETONIZED BRASS POCKET WATCH & HAIRSPRING!
 # ============================================================================
-# Mounted tilted 58° toward camera on emerald velvet display stand so entire balance wheel + spiral hairspring shine!
-WATCH_POS = Vector((0.12, 0.24, 0.36))
-add_box("WatchStandBase", (WATCH_POS.x, WATCH_POS.y + 0.04, 0.022), (0.50, 0.28, 0.044), mahogany_mat, bevel_w=0.006)
-add_box("WatchVelvetCushion", (WATCH_POS.x, WATCH_POS.y + 0.03, 0.052), (0.44, 0.24, 0.028), emerald_velvet_mat, bevel_w=0.008)
+# Parented to watch_station_root so it appears cleanly in Beat 5 (X=+0.28) & centers in Beat 6 (X=+0.06)
+# — keeping Beats 1 & 2 100% uncluttered behind Hooke & the glowing 3D cipher!
+WATCH_POS = Vector((0.28, 0.02, 0.30))
+bpy.ops.object.empty_add(type="PLAIN_AXES", location=(WATCH_POS.x, WATCH_POS.y, 0.0))
+watch_station_root = bpy.context.active_object
+watch_station_root.name = "WatchStationRoot"
 
-bpy.ops.object.empty_add(type="PLAIN_AXES", location=WATCH_POS, rotation=(math.radians(66.0), 0.0, 0.0))
+ws_base = add_box("WatchStandBase", (0.0, 0.03, 0.020), (0.46, 0.26, 0.040), mahogany_mat, bevel_w=0.006)
+ws_base.parent = watch_station_root
+ws_velvet = add_box("WatchVelvetCushion", (0.0, 0.02, 0.048), (0.40, 0.22, 0.026), emerald_velvet_mat, bevel_w=0.008)
+ws_velvet.parent = watch_station_root
+
+bpy.ops.object.empty_add(type="PLAIN_AXES", location=(0.0, 0.0, WATCH_POS.z), rotation=(math.radians(68.0), 0.0, 0.0))
 watch_case = bpy.context.active_object
 watch_case.name = "HookePocketWatch"
+watch_case.parent = watch_station_root
 
 # Outer Ornate Brass Case, Crown Bow & Recessed Skeleton Plate
-w_outer = add_torus("WatchCaseRim", (0, 0, 0), 0.265, 0.028, brass_mat, maj_seg=72, min_seg=18)
+w_outer = add_torus("WatchCaseRim", (0, 0, 0), 0.245, 0.026, brass_mat, maj_seg=72, min_seg=18)
 w_outer.parent = watch_case
-w_back = add_cyl("WatchBackPlate", (0, 0, -0.024), 0.255, 0.012, bronze_mat, verts=64)
+w_back = add_cyl("WatchBackPlate", (0, 0, -0.022), 0.236, 0.012, bronze_mat, verts=64)
 w_back.parent = watch_case
-w_crown = add_cyl("WatchCrownStem", (0, 0.295, 0), 0.024, 0.055, brass_mat, rot=(math.pi * 0.5, 0, 0), verts=28)
+w_crown = add_cyl("WatchCrownStem", (0, 0.274, 0), 0.022, 0.052, brass_mat, rot=(math.pi * 0.5, 0, 0), verts=28)
 w_crown.parent = watch_case
-w_bow = add_torus("WatchCrownBow", (0, 0.345, 0), 0.052, 0.009, brass_mat, maj_seg=36, min_seg=12)
+w_bow = add_torus("WatchCrownBow", (0, 0.320, 0), 0.048, 0.0085, brass_mat, maj_seg=36, min_seg=12)
 w_bow.parent = watch_case
 
 # 3 Meshing Brass Watchwork Escapement Gears inside skeleton plate!
-w_gear1 = add_toothed_gear("WatchGear1", (-0.105, -0.085, -0.006), 0.072, 0.012, 14, brass_mat, flat_xy=True)
+w_gear1 = add_toothed_gear("WatchGear1", (-0.098, -0.078, -0.006), 0.068, 0.012, 14, brass_mat, flat_xy=True)
 w_gear1.parent = watch_case
-w_gear2 = add_toothed_gear("WatchGear2", (0.110, -0.080, -0.006), 0.062, 0.012, 12, brass_mat, flat_xy=True)
+w_gear2 = add_toothed_gear("WatchGear2", (0.102, -0.074, -0.006), 0.058, 0.012, 12, brass_mat, flat_xy=True)
 w_gear2.parent = watch_case
-w_gear3 = add_toothed_gear("WatchGear3", (0.00, -0.145, -0.004), 0.048, 0.012, 10, steel_mat, flat_xy=True)
+w_gear3 = add_toothed_gear("WatchGear3", (0.00, -0.135, -0.004), 0.044, 0.012, 10, steel_mat, flat_xy=True)
 w_gear3.parent = watch_case
 
 # Hero Oscillating Brass Balance Wheel + 3 Spokes + Poising Screws + Ruby Jewel Bearing!
-bpy.ops.object.empty_add(type="PLAIN_AXES", location=(0.0, 0.045, 0.018))
+bpy.ops.object.empty_add(type="PLAIN_AXES", location=(0.0, 0.042, 0.018))
 balance_wheel = bpy.context.active_object
 balance_wheel.name = "BalanceWheelPivot"
 balance_wheel.parent = watch_case
-bw_rim = add_torus("BalanceRim", (0, 0, 0), 0.145, 0.012, brass_mat, maj_seg=64, min_seg=14)
+bw_rim = add_torus("BalanceRim", (0, 0, 0), 0.135, 0.011, brass_mat, maj_seg=64, min_seg=14)
 bw_rim.parent = balance_wheel
 for sp_i in range(3):
     sa = math.radians(sp_i * 120.0)
-    sp = add_box(f"BalanceSpoke_{sp_i}", (math.cos(sa) * 0.072, math.sin(sa) * 0.072, 0.0), (0.140, 0.010, 0.008), brass_mat, rot=(0, 0, sa))
+    sp = add_box(f"BalanceSpoke_{sp_i}", (math.cos(sa) * 0.068, math.sin(sa) * 0.068, 0.0), (0.132, 0.010, 0.008), brass_mat, rot=(0, 0, sa))
     sp.parent = balance_wheel
 for sc_i in range(12):
     sa = math.radians(sc_i * 30.0)
-    sc = add_cyl(f"PoisingScrew_{sc_i}", (math.cos(sa) * 0.160, math.sin(sa) * 0.160, 0.0), 0.006, 0.014, gold_glow_mat, rot=(0, math.pi * 0.5, sa), verts=12)
+    sc = add_cyl(f"PoisingScrew_{sc_i}", (math.cos(sa) * 0.148, math.sin(sa) * 0.148, 0.0), 0.0055, 0.013, gold_glow_mat, rot=(0, math.pi * 0.5, sa), verts=12)
     sc.parent = balance_wheel
-bw_ruby = add_sphere("RubyCenterJewel", (0, 0, 0.008), 0.020, ruby_jewel_mat, segs=24, rings=14)
+bw_ruby = add_sphere("RubyCenterJewel", (0, 0, 0.008), 0.019, ruby_jewel_mat, segs=24, rings=14)
 bw_ruby.parent = balance_wheel
 
 # REAL BREATHING BLUED-STEEL SPIRAL HAIRSPRING (expands & contracts smoothly with balance wheel!)
-hairspring = build_spiral_hairspring("BalanceHairspring", (0.0, 0.045, 0.032), r_in=0.022, r_out=0.115, turns=4.5, wire_r=0.0038, mat=cyan_glow_mat, segs=130)
+hairspring = build_spiral_hairspring("BalanceHairspring", (0.0, 0.042, 0.030), r_in=0.020, r_out=0.108, turns=4.5, wire_r=0.0038, mat=cyan_glow_mat, segs=130)
 hairspring.parent = watch_case
 
 
@@ -876,17 +921,17 @@ try:
     HOOKE_ACTOR = create_realistic_scientist(
         name="RobertHooke",
         floor_z=FLOOR_Z,
-        start_xy=(-0.34, 0.62),
-        yaw_deg=-8.0,
+        start_xy=(-1.24, 0.50),
+        yaw_deg=-18.0,
         cfg={
             "age": 0.58,
             "muscle": 0.52,
             "weight": 0.46,
             "height": 0.55,
-            "skin_rgb": (0.76, 0.50, 0.37),
-            "coat_rgb": (0.04, 0.14, 0.10),  # Royal Society Forest-Emerald Velvet Coat
-            "iris_rgb": (0.16, 0.32, 0.16),  # Expressive hazel-emerald eyes
-            "hair_rgb": (0.07, 0.04, 0.025), # Shoulder-length dark chestnut Stuart curls
+            "skin_rgb": (0.68, 0.43, 0.31),  # Natural warm filmic skin (zero washed-out paleness!)
+            "coat_rgb": (0.025, 0.14, 0.095), # Rich Royal Society Forest-Emerald 3D Velvet Coat
+            "iris_rgb": (0.14, 0.34, 0.18),   # Expressive hazel-emerald eyes
+            "hair_rgb": (0.065, 0.036, 0.020),# Shoulder-length dark chestnut Stuart curls
             "style": "curls",
             "mustache": False,
         },
@@ -895,17 +940,17 @@ try:
     RIVAL_ACTOR = create_realistic_scientist(
         name="RivalWatchmaker",
         floor_z=FLOOR_Z,
-        start_xy=(0.44, 0.64),
-        yaw_deg=18.0,
+        start_xy=(0.46, 0.52),
+        yaw_deg=22.0,
         cfg={
             "age": 0.78,
             "muscle": 0.56,
-            "weight": 0.60,
+            "weight": 0.58,
             "height": 0.58,
-            "skin_rgb": (0.79, 0.54, 0.42),
-            "coat_rgb": (0.26, 0.035, 0.055), # Royal Burgundy Velvet Coat
-            "iris_rgb": (0.14, 0.28, 0.44),   # Sharp icy-blue eyes
-            "hair_rgb": (0.62, 0.60, 0.56),   # Powdered silver Royal Society wig
+            "skin_rgb": (0.70, 0.45, 0.34),   # Warm elder complexion
+            "coat_rgb": (0.28, 0.032, 0.052), # Rich Royal Burgundy 3D Velvet Coat
+            "iris_rgb": (0.14, 0.32, 0.52),   # Sharp icy-blue eyes
+            "hair_rgb": (0.66, 0.64, 0.60),   # Powdered silver Royal Society wig
             "style": "wig",
             "mustache": True,
         },
@@ -918,47 +963,47 @@ except Exception as mpfb_err:
 # ============================================================================
 # 12. WARM LONDON CHIAROSCURO 4-LIGHT RIG + TRUE HORIZONTAL-FIT 9:16 CAMERA
 # ============================================================================
-# Warm Amber Oil-Lamp Key Area Light (sculpts realistic facial cheekbones & velvet folds!)
-bpy.ops.object.light_add(type="AREA", location=(-1.80, -1.65, 1.65))
+# Warm Amber Oil-Lamp Key Area Light (sculpts realistic cheekbones, velvet folds & brass!)
+bpy.ops.object.light_add(type="AREA", location=(-1.85, -1.75, 1.65))
 key_light = bpy.context.active_object
-key_light.data.energy = 245.0
-key_light.data.size = 1.25
+key_light.data.energy = 260.0
+key_light.data.size = 1.35
 key_light.data.color = (1.0, 0.78, 0.50)
-key_light.rotation_euler = Euler((math.radians(52), 0.0, math.radians(-42)))
+key_light.rotation_euler = Euler((math.radians(54), 0.0, math.radians(-38)))
 
-# Cool London Teal-Sapphire Twilight Rim Light separating hair & shoulders cleanly from wall!
-bpy.ops.object.light_add(type="AREA", location=(1.35, 2.35, 2.05))
+# Cool London Teal-Sapphire Twilight Rim Light separating hair, velvet shoulders & brass edges cleanly!
+bpy.ops.object.light_add(type="AREA", location=(1.40, 2.35, 2.05))
 rim_light = bpy.context.active_object
-rim_light.data.energy = 300.0
-rim_light.data.size = 1.5
+rim_light.data.energy = 320.0
+rim_light.data.size = 1.6
 rim_light.data.color = (0.38, 0.80, 1.0)
 rim_light.rotation_euler = Euler((math.radians(58), 0.0, math.radians(146)))
 
-# Warm Royal Society Brick & Bookshelf Wall-Wash Accent
-bpy.ops.object.light_add(type="AREA", location=(0.0, 0.85, 1.85))
+# Warm Royal Society Portrait Fill / Wall-Wash covering full 5.8m bench width evenly!
+bpy.ops.object.light_add(type="AREA", location=(0.20, -1.55, 1.55))
 wall_wash = bpy.context.active_object
-wall_wash.data.energy = 105.0
-wall_wash.data.size = 1.65
-wall_wash.data.color = (1.0, 0.80, 0.54)
-wall_wash.rotation_euler = Euler((math.radians(74), 0.0, 0.0))
+wall_wash.data.energy = 135.0
+wall_wash.data.size = 2.40
+wall_wash.data.color = (1.0, 0.84, 0.64)
+wall_wash.rotation_euler = Euler((math.radians(66), 0.0, math.radians(16)))
 
-# Subtle Emerald-Cyan Precision Instrument & Face Catchlight Fill
-bpy.ops.object.light_add(type="POINT", location=(0.10, -0.55, 0.58))
+# Crisp Eye Catchlight & Precision Instrument Sparkle Fill
+bpy.ops.object.light_add(type="POINT", location=(0.0, -0.75, 0.72))
 fill_accent = bpy.context.active_object
-fill_accent.data.energy = 22.0
-fill_accent.data.color = (0.55, 0.86, 0.98)
+fill_accent.data.energy = 26.0
+fill_accent.data.color = (0.68, 0.90, 1.0)
 
-bpy.ops.object.empty_add(location=(0.0, 0.0, 0.42))
+bpy.ops.object.empty_add(location=(0.0, 0.0, 0.44))
 cam_target = bpy.context.active_object
 cam_target.name = "CinemaCamTarget"
 
-bpy.ops.object.camera_add(location=(0.0, -1.85, 0.65))
+bpy.ops.object.camera_add(location=(-1.00, -1.42, 0.54))
 cam = bpy.context.active_object
 cam.name = "CinemaCamera"
 scene.camera = cam
 cam.data.sensor_fit = "HORIZONTAL"
 cam.data.sensor_width = 36.0
-cam.data.lens = 36.0
+cam.data.lens = 40.0
 cam.data.dof.use_dof = True
 cam.data.dof.focus_object = cam_target
 cam.data.dof.aperture_fstop = 3.2
@@ -966,62 +1011,48 @@ cam.rotation_mode = "QUATERNION"
 
 
 # ============================================================================
-# 13. 6-BEAT CHARACTER + INSTRUMENT CINEMA CAMERA GRAMMAR (VERIFIED 9:16!)
+# 13. 6-BEAT ZERO-OVERLAP CHARACTER + INSTRUMENT CINEMA CAMERA GRAMMAR (V3!)
 # ============================================================================
 def compute_beat_raw(beat_idx: int, t: float):
-    """Return (cam_pos, tgt_pos, lens_mm, fstop, dutch_deg) framing BOTH actors & instruments cleanly!"""
+    """Return (cam_pos, tgt_pos, lens_mm, fstop, dutch_deg) — 100% verified ZERO actor/prop face overlap!"""
     if beat_idx == 0:
-        # BEAT 1 (0..4.5s): Robert Hooke behind Helical Spring Rig demonstrating 1x -> 2x stretch!
+        # BEAT 1 (0..4.5s): Hooke (Left, X=-1.24) + Hero Spring Rig (Right, X=-0.78) — TIGHT MEDIUM SHOT!
         u = clamp01(t / 4.5)
-        pos = bezier_quad(Vector((-0.44, -1.62, 0.56)), Vector((-0.30, -1.48, 0.52)), Vector((-0.18, -1.36, 0.48)), u)
-        tgt = vlerp(Vector((-0.28, 0.22, 0.44)), Vector((-0.24, 0.22, 0.42)), u)
-        return pos, tgt, lerp(36.0, 39.0, u), 3.2, 0.0
+        pos = bezier_quad(Vector((-1.06, -1.48, 0.56)), Vector((-0.98, -1.36, 0.54)), Vector((-0.92, -1.28, 0.52)), u)
+        tgt = vlerp(Vector((-1.00, 0.16, 0.44)), Vector((-0.98, 0.16, 0.42)), u)
+        return pos, tgt, lerp(39.0, 42.0, u), 3.2, 0.0
     if beat_idx == 1:
-        # BEAT 2 (4.5..9.5s): Rival Watchmaker (right) + Hooke (left) 2-Shot across Cipher -> F = -kx!
-        pan_u = ease_out_quint(clamp01((t - 7.0) / 1.1))
-        pos = vlerp(Vector((0.28, -1.58, 0.56)), Vector((-0.02, -1.78, 0.56)), pan_u)
-        tgt = vlerp(Vector((0.32, 0.30, 0.44)), Vector((0.02, 0.32, 0.44)), pan_u)
-        return pos, tgt, lerp(37.0, 34.0, pan_u), 3.2, 0.0
+        # BEAT 2 (4.5..9.5s): Rival (R) + Cipher (L-C) -> Smooth Pan to 2-Shot Hooke (L) + Rival (R) + F=-kx (C)!
+        pan_u = ease_out_quint(clamp01((t - 7.0) / 1.0))
+        pos = vlerp(Vector((0.24, -1.36, 0.54)), Vector((0.00, -1.56, 0.56)), pan_u)
+        tgt = vlerp(Vector((0.22, 0.18, 0.44)), Vector((0.01, 0.22, 0.44)), pan_u)
+        return pos, tgt, lerp(39.0, 36.0, pan_u), 3.2, 0.0
     if beat_idx == 2:
-        # BEAT 3 (9.5..15.5s): Hooke beside 1665 Brass Microscope + Blooming Amber Cork 'CELLS'!
+        # BEAT 3 (9.5..15.5s): Microscope & Crisp Hexagonal Cork CELLS (Left) + Hooke (Right) — ZERO OVERLAP!
         u = clamp01((t - 9.5) / 6.0)
-        ang = math.radians(-16.0 + 34.0 * u)
-        rad = lerp(1.48, 1.34, math.sin(u * math.pi))
-        pos = Vector((MIC_POS.x + 0.06 + math.sin(ang) * rad * 0.60, MIC_POS.y - math.cos(ang) * rad, lerp(0.56, 0.70, u)))
-        tgt = vlerp(Vector((MIC_POS.x + 0.04, MIC_POS.y + 0.16, 0.42)), Vector((MIC_POS.x + 0.04, MIC_POS.y + 0.16, 0.48)), smoothstep(10.5, 13.0, t))
-        return pos, tgt, lerp(36.0, 39.0, u), 3.0, 0.0
+        pos = bezier_quad(Vector((-1.46, -1.42, 0.56)), Vector((-1.38, -1.32, 0.58)), Vector((-1.32, -1.26, 0.60)), u)
+        tgt = vlerp(Vector((-1.40, 0.14, 0.42)), Vector((-1.38, 0.16, 0.48)), smoothstep(10.5, 13.0, t))
+        return pos, tgt, lerp(39.0, 41.0, u), 3.0, 0.0
     if beat_idx == 3:
-        # BEAT 4 (15.5..20.5s): 3.8° Dutch-Tilt Rival Watchmaker + Overload Spring SNAP at t=17.65s!
+        # BEAT 4 (15.5..20.5s): 3.6° Dutch-Tilt Rival (Left) + Overload Spring SNAP (Right) at t=17.65s!
         u = clamp01((t - 15.5) / 5.0)
-        ang = math.radians(-12.0 + 26.0 * u)
-        rad = lerp(1.42, 1.50, u)
-        pos = Vector((OVER_X + math.sin(ang) * rad * 0.50, OVER_Y - math.cos(ang) * rad, lerp(0.50, 0.56, u)))
-        tgt = Vector((OVER_X - 0.02, OVER_Y + 0.24, 0.44))
+        pos = bezier_quad(Vector((1.14, -1.44, 0.54)), Vector((1.18, -1.36, 0.55)), Vector((1.22, -1.42, 0.56)), u)
+        tgt = Vector((1.16, 0.16, 0.44))
         shake = math.sin((t - 17.65) * 52.0) * math.exp(-(t - 17.65) * 6.5) * 0.028 if t >= 17.65 else 0.0
         pos.x += shake
         pos.z += shake * 0.5
-        return pos, tgt, lerp(36.0, 38.0, u), 3.0, 3.8 * math.sin(u * math.pi)
+        return pos, tgt, lerp(38.0, 40.0, u), 3.0, 3.6 * math.sin(u * math.pi)
     if beat_idx == 4:
-        # BEAT 5 (20.5..25.5s): Rising Crane over Hooke presenting Giant Skeleton Pocket Watch & Hairspring!
+        # BEAT 5 (20.5..25.5s): Hooke (Left, X=-0.26) presenting Giant Golden Skeleton Pocket Watch (Right, X=+0.28)!
         u = clamp01((t - 20.5) / 5.0)
-        pos = bezier_quad(
-            Vector((-0.26, -1.32, 0.56)),
-            Vector((-0.08, -1.42, 0.64)),
-            Vector((0.08, -1.48, 0.70)),
-            u,
-        )
-        tgt = vlerp(Vector((-0.08, 0.42, 0.46)), Vector((-0.06, 0.44, 0.48)), u)
-        return pos, tgt, lerp(36.0, 35.0, u), 3.2, 0.0
-    # BEAT 6 (25.5..30.0s): Hero Wide Pull-Back — Hooke + Rival flanking Entire Lab, Watch & DNA Spring!
+        pos = bezier_quad(Vector((-0.04, -1.40, 0.54)), Vector((0.02, -1.34, 0.58)), Vector((0.08, -1.38, 0.62)), u)
+        tgt = vlerp(Vector((0.01, 0.22, 0.44)), Vector((0.02, 0.24, 0.46)), u)
+        return pos, tgt, lerp(38.0, 40.0, u), 3.2, 0.0
+    # BEAT 6 (25.5..30.0s): Hero Wide Finale — Hooke (Left) + Rival (Right) flanking Watch, DNA Spring & Title!
     u = clamp01((t - 25.5) / 4.5)
-    pos = bezier_quad(
-        Vector((0.06, -2.08, 0.78)),
-        Vector((0.02, -2.32, 0.76)),
-        Vector((0.0, -2.50, 0.72)),
-        u,
-    )
-    tgt = vlerp(Vector((0.0, 0.40, 0.56)), Vector((0.0, 0.34, 0.54)), u)
-    return pos, tgt, lerp(33.0, 30.0, u), 3.8, 0.0
+    pos = bezier_quad(Vector((0.04, -1.90, 0.72)), Vector((0.03, -2.06, 0.70)), Vector((0.02, -2.18, 0.68)), u)
+    tgt = vlerp(Vector((0.03, 0.28, 0.54)), Vector((0.03, 0.26, 0.52)), u)
+    return pos, tgt, lerp(34.5, 32.5, u), 3.8, 0.0
 
 
 BEAT_BOUNDS = [0.0, 4.5, 9.5, 15.5, 20.5, 25.5, 30.0]
@@ -1029,8 +1060,8 @@ BEAT_BOUNDS = [0.0, 4.5, 9.5, 15.5, 20.5, 25.5, 30.0]
 
 def compute_camera_state(t: float):
     """Smooth single-take cinema camera with 0.42s easeOutQuint whip-pans synced to exact whip_whoosh SFX!"""
-    sway_x = math.sin(t * 1.18) * 0.011 + math.sin(t * 2.45) * 0.004
-    sway_z = math.cos(t * 0.94) * 0.009
+    sway_x = math.sin(t * 1.18) * 0.010 + math.sin(t * 2.45) * 0.003
+    sway_z = math.cos(t * 0.94) * 0.008
 
     b_idx = 5
     for i in range(6):
@@ -1081,21 +1112,18 @@ for f in range(1, TOTAL_FRAMES + 1):
         fl.scale = (1.0, 1.0, flick)
         fl.keyframe_insert("scale", frame=f)
 
-    # 3. Hooke's Law Hero Spring Physics: 1x Weight (0.3-2.35s) -> 2x Weight Double Stretch + Damped Harmonic Bounce!
+    # 3. Hooke's Law Hero Spring Physics: 1x Weight (0.3-2.35s) -> 2x Weight Double Stretch + Damped Bounce!
     s1 = smoothstep(0.28, 0.85, t)
     b1 = math.sin((t - 0.85) * 14.0) * math.exp(-(t - 0.85) * 2.8) * 0.14 if t >= 0.85 else 0.0
     s2 = smoothstep(2.35, 2.85, t)
     b2 = math.sin((t - 2.85) * 12.5) * math.exp(-(t - 2.85) * 2.4) * 0.20 if t >= 2.85 else 0.0
-    # Extra lively elastic demonstration pulse at t=7.25s ("F = -kx!")
     b3 = math.sin((t - 7.25) * 13.0) * math.exp(-(t - 7.25) * 2.2) * 0.16 if t >= 7.25 else 0.0
 
-    stretch_ratio = 1.0 + 0.36 * s1 + b1 + 0.42 * s2 + b2 + b3
-    stretch_ratio = max(0.85, min(2.05, stretch_ratio))
+    stretch_ratio = max(0.85, min(2.05, 1.0 + 0.36 * s1 + b1 + 0.42 * s2 + b2 + b3))
     hero_spring.scale = Vector((1.0, 1.0, stretch_ratio))
     cur_bottom_z = SPRING_TOP_Z - SPRING_REST_LEN * stretch_ratio
     weight_pan.location = Vector((RIG_X + 0.08, RIG_Y, cur_bottom_z))
     ruler_pointer.location = Vector((RIG_X + 0.14, RIG_Y - 0.012, cur_bottom_z))
-    # Weight 2 smoothly appears when added at t=2.35s!
     w2_vis = max(0.0001, smoothstep(2.15, 2.45, t))
     w2.scale = Vector((w2_vis, w2_vis, w2_vis))
     w2_band.scale = Vector((w2_vis, w2_vis, w2_vis))
@@ -1113,22 +1141,22 @@ for f in range(1, TOTAL_FRAMES + 1):
     anagram_txt.keyframe_insert("scale", frame=f)
     anagram_txt.keyframe_insert("location", frame=f)
 
-    form_vis = smoothstep(7.05, 7.45, t) * (1.0 - smoothstep(10.0, 10.6, t)) + 0.85 * smoothstep(25.4, 26.2, t)
+    form_vis = smoothstep(7.05, 7.45, t) * (1.0 - smoothstep(10.0, 10.6, t))
     form_sc = max(0.0001, form_vis)
     formula_txt.scale = Vector((form_sc, form_sc, form_sc))
     formula_txt.location = Vector((FOLIO_POS.x, FOLIO_POS.y, 0.28 + math.sin(t * 2.4) * 0.012))
     formula_txt.keyframe_insert("scale", frame=f)
     formula_txt.keyframe_insert("location", frame=f)
 
-    # 5. Beat 3 Translucent Amber-Gold Hexagonal Cork 'CELLS' Bloom above Microscope!
-    cell_u = smoothstep(10.8, 12.2, t) * (1.0 - smoothstep(15.3, 15.8, t)) + 0.65 * smoothstep(25.4, 26.2, t)
+    # 5. Beat 3 Crisp Dark-Backlit Hexagonal Cork 'CELLS' Microscope Projection above Microscope!
+    cell_u = smoothstep(10.6, 12.0, t) * (1.0 - smoothstep(15.3, 15.8, t)) + 0.70 * smoothstep(25.4, 26.2, t)
     cell_sc = max(0.0001, cell_u)
-    cork_cells_mesh.scale = Vector((cell_sc, cell_sc, cell_sc))
-    cork_cells_mesh.location = Vector((CELLS_BASE.x, CELLS_BASE.y, lerp(0.24, CELLS_BASE.z, min(1.0, cell_u)) + math.sin(t * 1.9) * 0.012))
-    cork_cells_mesh.rotation_euler = Euler((math.radians(46.0), 0.0, math.radians(15.0) + t * 0.28))
-    cork_cells_mesh.keyframe_insert("scale", frame=f)
-    cork_cells_mesh.keyframe_insert("location", frame=f)
-    cork_cells_mesh.keyframe_insert("rotation_euler", frame=f)
+    cork_cells_group.scale = Vector((cell_sc, cell_sc, cell_sc))
+    cork_cells_group.location = Vector((CELLS_BASE.x, CELLS_BASE.y, lerp(0.26, CELLS_BASE.z, min(1.0, cell_u)) + math.sin(t * 1.9) * 0.010))
+    cork_cells_group.rotation_euler = Euler((math.radians(74.0), 0.0, math.radians(-10.0) + math.sin(t * 0.8) * 0.10))
+    cork_cells_group.keyframe_insert("scale", frame=f)
+    cork_cells_group.keyframe_insert("location", frame=f)
+    cork_cells_group.keyframe_insert("rotation_euler", frame=f)
 
     # 6. Beat 4 Overload Elastic-Limit Spring -> Copper Glow Strain -> DRAMATIC SNAP at t=17.65s!
     if t < 17.65:
@@ -1142,13 +1170,11 @@ for f in range(1, TOTAL_FRAMES + 1):
         overload_weight.location = Vector((OVER_X - 0.04, OVER_Y, wt_z))
         overload_ring.location = Vector((OVER_X - 0.04, OVER_Y, wt_z))
     else:
-        # Permanently deformed snapped spring recoils crookedly & heavy weight crashes to bench!
         dt_sn = t - 17.65
         fall_u = clamp01(dt_sn / 0.28)
         wt_z = lerp(0.11, 0.072, fall_u * fall_u)
         overload_weight.location = Vector((OVER_X - 0.04, OVER_Y, wt_z))
         overload_ring.location = Vector((OVER_X - 0.04, OVER_Y, wt_z))
-        # Crooked bent permanently uncoiled spring!
         recoil = math.sin(dt_sn * 28.0) * math.exp(-dt_sn * 4.5) * 0.25
         overload_spring.scale = Vector((0.76, 0.76, 1.68 + recoil))
         overload_spring.rotation_euler = Euler((0.18, -0.22 + recoil * 0.5, 0.0))
@@ -1161,7 +1187,6 @@ for f in range(1, TOTAL_FRAMES + 1):
     overload_weight.keyframe_insert("location", frame=f)
     overload_ring.keyframe_insert("location", frame=f)
 
-    # 16 Metallic Snap Sparks bursting at t=17.65s!
     dt_sp = t - 17.65
     for i, sp in enumerate(snap_sparks):
         if 0.0 <= dt_sp < 1.65:
@@ -1179,13 +1204,18 @@ for f in range(1, TOTAL_FRAMES + 1):
         sp.keyframe_insert("location", frame=f)
         sp.keyframe_insert("scale", frame=f)
 
-    # 7. Beat 5-6 Giant Pocket Watch Balance Wheel & Breathing Spiral Hairspring (running smoothly all 30s!)
-    # Harmonic oscillation at 2.5 Hz (classic watch tick-tock cadence!)
+    # 7. Beat 5-6 Giant Pocket Watch Station (Unveiled cleanly at Beat 5, centers for Beat 6 Finale!)
+    w_vis = max(0.0001, smoothstep(20.1, 20.6, t))
+    w_center_u = smoothstep(25.3, 26.0, t)
+    watch_station_root.scale = Vector((w_vis, w_vis, w_vis))
+    watch_station_root.location = Vector((lerp(0.28, 0.06, w_center_u), lerp(0.02, 0.04, w_center_u), 0.0))
+    watch_station_root.keyframe_insert("scale", frame=f)
+    watch_station_root.keyframe_insert("location", frame=f)
+
     osc = math.sin(t * math.pi * 5.0)
     balance_wheel.rotation_euler = Euler((0.0, 0.0, osc * math.radians(68.0)))
-    # Spiral hairspring physically breathes radially IN and OUT as the balance wheel swings!
-    breath = 1.0 + osc * 0.14
-    hairspring.scale = Vector((breath, breath, 1.0))
+    w_breath = 1.0 + osc * 0.14
+    hairspring.scale = Vector((w_breath, w_breath, 1.0))
     hairspring.rotation_euler = Euler((0.0, 0.0, osc * math.radians(22.0)))
 
     w_gear1.rotation_euler = Euler((0.0, 0.0, t * 0.90))
@@ -1200,8 +1230,10 @@ for f in range(1, TOTAL_FRAMES + 1):
     dna_sc = max(0.0001, dna_u)
     dna_stretch = 1.0 + 0.16 * math.sin((t - 25.5) * 4.8) * dna_u
     dna_group.scale = Vector((dna_sc, dna_sc, dna_sc * dna_stretch))
+    dna_group.location = Vector((0.0, 0.08, 0.92))
     dna_group.rotation_euler = Euler((math.radians(14.0), math.radians(-18.0), t * 1.15))
     dna_group.keyframe_insert("scale", frame=f)
+    dna_group.keyframe_insert("location", frame=f)
     dna_group.keyframe_insert("rotation_euler", frame=f)
 
     tit_u = smoothstep(21.2, 22.4, t)
@@ -1209,67 +1241,68 @@ for f in range(1, TOTAL_FRAMES + 1):
     title_txt.scale = Vector((tit_sc, tit_sc, tit_sc))
     title_txt.keyframe_insert("scale", frame=f)
 
-    # 9. REALISTIC MPFB2 CAST ACTING, BLOCKING & EXACT KOKORO JAW LIP-SYNC!
-    breath = math.sin(t * 2.3) * 1.4
+    # 9. REALISTIC MPFB2 CAST ACTING, ZERO-OVERLAP BLOCKING & VERIFIED NATURAL ARM POSES!
+    # Reminder: Character +X = Character's LEFT (Screen RIGHT), -X = Character's RIGHT (Screen LEFT), -Y = Forward!
+    breath = math.sin(t * 2.3) * 1.2
     if HOOKE_ACTOR is not None:
         hrig = HOOKE_ACTOR["rig"]
         h_lip = sample_lip_sync("hooke", t)
-        h_base_z = hrig.location.z
+        h_base_z = HOOKE_ACTOR["base_z"]
 
-        # Beat-specific staging behind workbench (smooth transitions across beats!)
         if t < 4.5:
-            # Beat 1: Hooke behind Spring Rig demonstrating 1x -> 2x weights!
-            hx, hy, hyaw = -0.34, 0.62, -6.0
-            lean_x = 8.0 + breath * 0.5
-            head_rx, head_rz = 14.0 - smoothstep(2.2, 3.0, t) * 5.0, -4.0 + math.sin(t * 1.6) * 4.0
-            ua_r = (-32.0 - smoothstep(2.1, 2.8, t) * 18.0, -14.0, 0.0)
-            la_r = (-46.0 + math.sin(t * 3.5) * 6.0, 0.0, 0.0)
-            ua_l = (-14.0, 26.0, 0.0)
-            la_l = (-28.0, 0.0, 0.0)
+            # Beat 1: Hooke cleanly LEFT (X=-1.24), gesturing with LEFT hand toward Spring Rig on RIGHT (X=-0.78)!
+            hx, hy, hyaw = -1.24, 0.50, -18.0
+            lean_x = 5.0 + breath * 0.4
+            head_rx, head_rz = 8.0 - smoothstep(2.2, 3.0, t) * 4.0, -14.0 + math.sin(t * 1.8) * 3.0
+            g = smoothstep(2.0, 2.8, t)
+            ua_l = (-14.0 - g * 12.0, 26.0 - g * 4.0, -24.0 - g * 10.0)
+            la_l = (-24.0 - g * 6.0 + math.sin(t * 3.2) * 4.0, 0.0, -22.0 + g * 6.0)
+            ua_r = (-8.0, -32.0, 16.0)
+            la_r = (-22.0, 0.0, 32.0)
         elif t < 9.5:
-            # Beat 2: Hooke on left debating Rival -> triumphant raise on 'F = -kx!' (t=7.1s)
-            hx, hy, hyaw = -0.36, 0.64, -22.0
-            speak_u = smoothstep(6.9, 7.4, t)
-            lean_x = 5.0 + speak_u * 4.0 + breath * 0.5
-            head_rx, head_rz = 6.0 - speak_u * 6.0, -12.0 + math.sin(t * 3.2) * 3.0 * speak_u
-            ua_r = (-18.0 - speak_u * 38.0, -24.0 + speak_u * 18.0, 0.0)
-            la_r = (-35.0 - speak_u * 32.0 + math.sin(t * 5.0) * 5.0 * speak_u, 0.0, 0.0)
-            ua_l = (-16.0 - speak_u * 16.0, 26.0, 0.0)
-            la_l = (-32.0, 0.0, 0.0)
+            # Beat 2: Hooke LEFT (X=-0.44) facing Rival & glowing 'F = -kx' — open two-hand presentation at t=7.1s!
+            hx, hy, hyaw = -0.44, 0.52, -22.0
+            sp_u = smoothstep(6.9, 7.4, t)
+            lean_x = 4.0 + sp_u * 3.0 + breath * 0.4
+            head_rx, head_rz = 5.0 - sp_u * 4.0, -14.0 + math.sin(t * 3.2) * 3.0 * sp_u
+            ua_l = (lerp(-10.0, -24.0, sp_u), lerp(30.0, 22.0, sp_u), lerp(-18.0, -32.0, sp_u))
+            la_l = (lerp(-22.0, -30.0, sp_u) + math.sin(t * 4.5) * 4.0 * sp_u, 0.0, lerp(-30.0, -18.0, sp_u))
+            ua_r = (lerp(-8.0, -18.0, sp_u), lerp(-32.0, -24.0, sp_u), lerp(16.0, 26.0, sp_u))
+            la_r = (lerp(-22.0, -28.0, sp_u), 0.0, lerp(32.0, 24.0, sp_u))
         elif t < 15.5:
-            # Beat 3: Hooke beside 1665 Brass Microscope gazing in wonder at blooming Cork 'CELLS'!
-            hx, hy, hyaw = -0.82, 0.78, -6.0
-            wonder = smoothstep(11.0, 12.6, t)
-            lean_x = 10.0 - wonder * 6.0 + breath * 0.5
-            head_rx, head_rz = 14.0 - wonder * 18.0, 4.0 + math.sin(t * 1.4) * 5.0
-            ua_r = (-28.0 - wonder * 22.0, -16.0 + wonder * 12.0, 0.0)
-            la_r = (-48.0 - wonder * 14.0, 0.0, 0.0)
-            ua_l = (-24.0, 20.0, 0.0)
-            la_l = (-42.0, 0.0, 0.0)
+            # Beat 3: Hooke cleanly RIGHT (X=-1.16) of Microscope (X=-1.62), gesturing with RIGHT hand at Cork CELLS!
+            hx, hy, hyaw = -1.16, 0.50, 18.0
+            wonder = smoothstep(10.8, 12.4, t)
+            lean_x = 7.0 - wonder * 4.0 + breath * 0.4
+            head_rx, head_rz = 10.0 - wonder * 10.0, 12.0 + math.sin(t * 1.5) * 4.0
+            ua_r = (lerp(-14.0, -26.0, wonder), lerp(-28.0, -20.0, wonder), lerp(22.0, 34.0, wonder))
+            la_r = (lerp(-24.0, -30.0, wonder) + math.sin(t * 2.6) * 3.0, 0.0, lerp(26.0, 16.0, wonder))
+            ua_l = (-8.0, 32.0, -16.0)
+            la_l = (-22.0, 0.0, -32.0)
         elif t < 20.5:
             # Beat 4: Hooke off-camera left watching Rival's spring disaster
-            hx, hy, hyaw = -0.60, 0.72, -18.0
-            lean_x, head_rx, head_rz = 4.0, 6.0, -18.0
-            ua_r, la_r = (-16.0, -28.0, 0.0), (-26.0, 0.0, 0.0)
-            ua_l, la_l = (-14.0, 28.0, 0.0), (-24.0, 0.0, 0.0)
+            hx, hy, hyaw = -0.60, 0.58, -18.0
+            lean_x, head_rx, head_rz = 3.0, 4.0, -18.0
+            ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
+            ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
         elif t < 25.5:
-            # Beat 5: Hooke presenting Giant Skeleton Pocket Watch & Breathing Spiral Hairspring!
-            hx, hy, hyaw = -0.34, 0.74, -14.0
-            lean_x = 5.0 + breath * 0.5
-            head_rx, head_rz = 8.0, -14.0 + math.sin(t * 1.8) * 4.0
-            ua_r = (-34.0 + math.sin(t * 2.2) * 5.0, -10.0, 0.0)
-            la_r = (-52.0, 0.0, 0.0)
-            ua_l = (-22.0, 22.0, 0.0)
-            la_l = (-38.0, 0.0, 0.0)
+            # Beat 5: Hooke cleanly LEFT (X=-0.26) presenting Giant Skeleton Pocket Watch on RIGHT (X=+0.28)!
+            hx, hy, hyaw = -0.26, 0.50, -18.0
+            lean_x = 4.0 + breath * 0.4
+            head_rx, head_rz = 6.0, -14.0 + math.sin(t * 1.8) * 3.5
+            ua_l = (-24.0 + math.sin(t * 2.2) * 3.0, 22.0, -32.0)
+            la_l = (-28.0, 0.0, -18.0)
+            ua_r = (-10.0, -30.0, 18.0)
+            la_r = (-24.0, 0.0, 30.0)
         else:
-            # Beat 6: Hero Wide Finale — Hooke left of lab & DNA Elastic Spring!
-            hx, hy, hyaw = -0.58, 0.74, -14.0
-            lean_x = 2.0 + breath * 0.5
-            head_rx, head_rz = -4.0, -10.0 + math.sin(t * 1.5) * 4.0
-            ua_r = (-42.0, 8.0, 0.0)
-            la_r = (-48.0, 0.0, 0.0)
-            ua_l = (-28.0, 14.0, 0.0)
-            la_l = (-36.0, 0.0, 0.0)
+            # Beat 6: Grand Finale — Hooke proudly LEFT (X=-0.50) flanking Watch & DNA Spring!
+            hx, hy, hyaw = -0.50, 0.56, -16.0
+            lean_x = 2.0 + breath * 0.4
+            head_rx, head_rz = -2.0, -10.0 + math.sin(t * 1.5) * 3.0
+            ua_l = (-22.0, 22.0, -28.0)
+            la_l = (-28.0, 0.0, -22.0)
+            ua_r = (-12.0, -30.0, 20.0)
+            la_r = (-24.0, 0.0, 28.0)
 
         hrig.location = Vector((hx, hy, h_base_z))
         hrig.rotation_euler = Euler((0.0, 0.0, math.radians(hyaw)))
@@ -1289,61 +1322,62 @@ for f in range(1, TOTAL_FRAMES + 1):
     if RIVAL_ACTOR is not None:
         rrig = RIVAL_ACTOR["rig"]
         r_lip = sample_lip_sync("skeptic", t)
-        r_base_z = rrig.location.z
+        r_base_z = RIVAL_ACTOR["base_z"]
 
         if t < 4.5:
-            # Beat 1: Off-camera right waiting for Beat 2 entrance
-            rx_p, ry_p, ryaw = 1.45, 0.68, 20.0
+            # Beat 1: Off-camera right waiting cleanly for Beat 2
+            rx_p, ry_p, ryaw = 1.65, 0.56, 20.0
             lean_x, head_rx, head_rz = 2.0, 4.0, 12.0
-            ua_l, la_l = (-14.0, 28.0, 0.0), (-26.0, 0.0, 0.0)
-            ua_r, la_r = (-14.0, -28.0, 0.0), (-26.0, 0.0, 0.0)
+            ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
+            ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
             jaw_bias = 0.0
         elif t < 9.5:
-            # Beat 2: Rival skeptically pointing at scrambled cipher -> amazed as it snaps to F = -kx!
-            rx_p, ry_p, ryaw = 0.42, 0.64, 24.0
-            skeptic_talk = 1.0 - smoothstep(6.8, 7.3, t)
-            lean_x = 7.0 * skeptic_talk + breath * 0.5
-            head_rx, head_rz = 8.0 * skeptic_talk - 4.0 * (1.0 - skeptic_talk), 14.0 + math.sin(t * 3.8) * 4.0 * skeptic_talk
-            ua_l = (-36.0 * skeptic_talk - 16.0, 14.0, 0.0)
-            la_l = (-54.0 * skeptic_talk - 26.0, 0.0, 0.0)
-            ua_r = (-16.0, -26.0, 0.0)
-            la_r = (-32.0, 0.0, 0.0)
+            # Beat 2: Rival RIGHT (X=+0.46) gesturing skeptically with RIGHT hand at Cipher -> amazed at F=-kx!
+            rx_p, ry_p, ryaw = 0.46, 0.52, 22.0
+            sk = 1.0 - smoothstep(6.8, 7.3, t)
+            lean_x = 5.0 * sk + breath * 0.4
+            head_rx, head_rz = 6.0 * sk - 3.0 * (1.0 - sk), 14.0 + math.sin(t * 3.6) * 3.5 * sk
+            ua_r = (lerp(-14.0, -24.0, sk), lerp(-28.0, -22.0, sk), lerp(22.0, 34.0, sk))
+            la_r = (lerp(-24.0, -28.0, sk) + math.sin(t * 4.2) * 4.0 * sk, 0.0, lerp(26.0, 16.0, sk))
+            ua_l = (-10.0, 30.0, -18.0)
+            la_l = (-24.0, 0.0, -30.0)
             jaw_bias = 0.0
         elif t < 15.5:
-            # Beat 3: Standing right side (off-frame during Microscope macro)
-            rx_p, ry_p, ryaw = 0.90, 0.64, 14.0
-            lean_x, head_rx, head_rz = 3.0, 6.0, 10.0
-            ua_l, la_l = (-14.0, 28.0, 0.0), (-24.0, 0.0, 0.0)
-            ua_r, la_r = (-14.0, -28.0, 0.0), (-24.0, 0.0, 0.0)
+            # Beat 3: Off-camera right during Hooke's Microscope beat
+            rx_p, ry_p, ryaw = 0.92, 0.54, 14.0
+            lean_x, head_rx, head_rz = 3.0, 5.0, 10.0
+            ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
+            ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
             jaw_bias = 0.0
         elif t < 20.5:
-            # Beat 4: Rival leans smugly over Overload Spring -> COMEDIC RECOIL SHOCK AT t=17.65s SNAP!
+            # Beat 4: Rival cleanly LEFT (X=+0.92) of Overload Spring (X=+1.42) -> NATURAL DEFENSIVE SHOCK RECOIL!
             shock = smoothstep(17.62, 17.85, t)
-            recoil_osc = math.sin((t - 17.65) * 18.0) * math.exp(-(t - 17.65) * 3.5) * 5.0 if t >= 17.65 else 0.0
-            rx_p, ry_p, ryaw = 0.88, 0.62 + shock * 0.14, 10.0
-            lean_x = lerp(10.0, -14.0, shock) + recoil_osc
-            head_rx, head_rz = lerp(12.0, -12.0, shock), math.sin(t * 6.0) * 6.0 * shock
-            ua_l = (lerp(-28.0, -64.0, shock), lerp(20.0, -18.0, shock), 0.0)
-            la_l = (lerp(-44.0, -72.0, shock), 0.0, 0.0)
-            ua_r = (lerp(-24.0, -64.0, shock), lerp(-22.0, 18.0, shock), 0.0)
-            la_r = (lerp(-38.0, -72.0, shock), 0.0, 0.0)
-            jaw_bias = 11.0 * shock * (1.0 - smoothstep(18.5, 19.2, t))
+            recoil_osc = math.sin((t - 17.65) * 18.0) * math.exp(-(t - 17.65) * 3.5) * 4.0 if t >= 17.65 else 0.0
+            rx_p, ry_p, ryaw = 0.92 - shock * 0.06, 0.50 + shock * 0.08, -18.0
+            lean_x = lerp(7.0, -11.0, shock) + recoil_osc
+            head_rx, head_rz = lerp(8.0, -10.0, shock), lerp(-14.0, -8.0, shock) + math.sin(t * 6.0) * 4.0 * shock
+            # Natural defensive chest-level recoil hands (elbows tucked cleanly at ribs, NEVER zombie arms overhead!)
+            ua_l = (lerp(-22.0, -28.0, shock), lerp(24.0, 24.0, shock), lerp(-30.0, -34.0, shock))
+            la_l = (lerp(-26.0, -46.0, shock), 0.0, lerp(-18.0, -34.0, shock))
+            ua_r = (lerp(-10.0, -28.0, shock), lerp(-30.0, -24.0, shock), lerp(18.0, 34.0, shock))
+            la_r = (lerp(-24.0, -46.0, shock), 0.0, lerp(30.0, 34.0, shock))
+            jaw_bias = 12.0 * shock * (1.0 - smoothstep(18.6, 19.3, t))
         elif t < 25.5:
             # Beat 5: Off-camera right during Hooke's Pocket Watch showcase
-            rx_p, ry_p, ryaw = 1.25, 0.72, 18.0
-            lean_x, head_rx, head_rz = 2.0, 4.0, 16.0
-            ua_l, la_l = (-14.0, 28.0, 0.0), (-24.0, 0.0, 0.0)
-            ua_r, la_r = (-14.0, -28.0, 0.0), (-24.0, 0.0, 0.0)
+            rx_p, ry_p, ryaw = 1.35, 0.56, 18.0
+            lean_x, head_rx, head_rz = 2.0, 4.0, 14.0
+            ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
+            ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
             jaw_bias = 0.0
         else:
-            # Beat 6: Hero Wide Finale — Rival amazed on right flanking the DNA Spring!
-            rx_p, ry_p, ryaw = 0.62, 0.74, 16.0
-            lean_x = 1.0 + breath * 0.5
-            head_rx, head_rz = -5.0, 12.0 + math.sin(t * 1.6) * 4.0
-            ua_l = (-34.0, 12.0, 0.0)
-            la_l = (-46.0, 0.0, 0.0)
-            ua_r = (-20.0, -22.0, 0.0)
-            la_r = (-34.0, 0.0, 0.0)
+            # Beat 6: Grand Finale — Rival amazed RIGHT (X=+0.58) flanking Watch & DNA Spring!
+            rx_p, ry_p, ryaw = 0.58, 0.56, 16.0
+            lean_x = 1.0 + breath * 0.4
+            head_rx, head_rz = -3.0, 10.0 + math.sin(t * 1.6) * 3.0
+            ua_r = (-22.0, -22.0, 28.0)
+            la_r = (-28.0, 0.0, 22.0)
+            ua_l = (-12.0, 30.0, -20.0)
+            la_l = (-24.0, 0.0, -28.0)
             jaw_bias = 0.0
 
         rrig.location = Vector((rx_p, ry_p, r_base_z))
@@ -1366,18 +1400,25 @@ for f in range(1, TOTAL_FRAMES + 1):
 # 15. EXECUTE RENDER (QA 6-BEAT PREVIEW OR PRODUCTION FRAME RANGE!)
 # ============================================================================
 if ARGS.qa_only:
-    qa_times = [2.6, 6.2, 12.8, 17.8, 23.2, 28.2]
+    # Preview all 6 Beats (Beat 2 shows iconic 2-shot of Hooke + Rival flanking F = -kx!)
+    qa_times = [2.6, 8.5, 12.8, 17.8, 23.2, 28.2]
     qa_frames = [max(1, min(TOTAL_FRAMES, int(round(ts * FPS)) + 1)) for ts in qa_times]
-    print(f"[Hooke Cycles Turbo QA] Rendering 6 Beat keyframes {qa_frames} ({FPS}fps, {ARGS.scale}% res) -> {OUT_DIR} ...")
+    print(f"[Hooke Cycles Turbo QA] Rendering 6 Beat keyframes {qa_frames} ({FPS}fps, {ARGS.samples}spp, {ARGS.scale}% res) -> {OUT_DIR} ...")
+    t_render_start = time.time()
     for idx, qf in enumerate(qa_frames, 1):
         scene.frame_set(qf)
         scene.render.filepath = os.path.join(OUT_DIR, f"qa_beat{idx}_f{qf:04d}.jpg")
         bpy.ops.render.render(write_still=True)
-    print("[Hooke Cycles Turbo QA] All 6 Beat keyframes complete!")
+    dt_pure = time.time() - t_render_start
+    print(
+        f"[QA Pure Render Speed] 6 frames in {dt_pure:.1f}s (~{dt_pure/6:.2f}s/frame -> "
+        f"True Est. Full 720-frame Dual-T4 Render Time: ~{(dt_pure/6)*360/60:.1f} min!)"
+    )
 else:
     print(
         f"[Hooke Cycles Turbo] Rendering frames {scene.frame_start}..{scene.frame_end} "
         f"({RES_X}x{RES_Y} @ {ARGS.scale}%, {FPS}fps, {ARGS.samples} spp) -> {OUT_DIR} ..."
     )
+    t_render_start = time.time()
     bpy.ops.render.render(animation=True)
-    print(f"[Hooke Cycles Turbo] Batch {scene.frame_start}..{scene.frame_end} complete!")
+    print(f"[Hooke Cycles Turbo] Batch {scene.frame_start}..{scene.frame_end} complete in {(time.time()-t_render_start)/60:.1f} min!")
