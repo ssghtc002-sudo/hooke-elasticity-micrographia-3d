@@ -60,18 +60,21 @@ def main():
             print(f"[MPFB2 Packs] Already installed: {base}")
             continue
         print(f"[MPFB2 Packs] Extracting {base} -> {data_dir} ...")
-        # Use MPFB2's own check/fix helper if zip has nested folder, else direct extractall
+        known_roots = {"skins", "eyes", "eyebrows", "eyelashes", "teeth", "tongue", "hair", "clothes", "bodyparts"}
         try:
-            check = AssetService.check_asset_pack_zip(zp)
-            if check is not None:
-                res = AssetService.fix_and_extract_asset_pack_zip(zp, data_dir)
-                if res is not None:
-                    print(f"[MPFB2 Packs] fix_and_extract returned notice ({res}), falling back to direct extract")
-                    with zipfile.ZipFile(zp, "r") as zf:
-                        zf.extractall(data_dir)
-            else:
-                with zipfile.ZipFile(zp, "r") as zf:
+            with zipfile.ZipFile(zp, "r") as zf:
+                top_dirs = {n.split("/", 1)[0].lower() for n in zf.namelist() if "/" in n}
+                if top_dirs & known_roots:
                     zf.extractall(data_dir)
+                else:
+                    check = AssetService.check_asset_pack_zip(zp)
+                    if check is not None:
+                        res = AssetService.fix_and_extract_asset_pack_zip(zp, data_dir)
+                        if res is not None:
+                            print(f"[MPFB2 Packs] fix_and_extract notice ({res}), direct extract fallback")
+                            zf.extractall(data_dir)
+                    else:
+                        zf.extractall(data_dir)
         except Exception as err:
             print(f"[MPFB2 Packs] Direct extract fallback for {base} ({err})")
             with zipfile.ZipFile(zp, "r") as zf:
