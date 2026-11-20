@@ -471,7 +471,7 @@ def create_realistic_scientist(
             suit_path,
             basemesh,
             asset_type="Clothes",
-            subdiv_levels=1,
+            subdiv_levels=0,
             material_type="MAKESKIN",
             set_up_rigging=True,
             interpolate_weights=True,

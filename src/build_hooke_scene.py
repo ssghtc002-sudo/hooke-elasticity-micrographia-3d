@@ -163,6 +163,10 @@ scene.cycles.transmission_bounces = 4
 scene.cycles.glossy_bounces = 2
 scene.cycles.diffuse_bounces = 2
 scene.cycles.transparent_max_bounces = 14
+try:
+    scene.cycles.texture_limit_render = "2048"
+except Exception:
+    pass
 
 try:
     scene.view_settings.view_transform = "AgX"
