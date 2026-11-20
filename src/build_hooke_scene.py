@@ -395,6 +395,21 @@ emerald_glow_mat = make_emissive_mat("HookeEmeraldGlow", (0.08, 0.88, 0.44), str
 hot_copper_mat = make_emissive_mat("OverloadCopperGlow", (1.0, 0.20, 0.04), strength=6.2)
 lamp_flame_mat = make_emissive_mat("OilLampFlame", (1.0, 0.50, 0.08), strength=8.0)
 
+# Razor-sharp anti-bloom 3D Text materials + bundled DejaVuSans-Bold font (zero mashed Bfont letters!)
+text_gold_mat = make_emissive_mat("TextGoldCrisp", (1.0, 0.72, 0.14), strength=2.4)
+text_cyan_mat = make_emissive_mat("TextCyanCrisp", (0.14, 0.82, 1.0), strength=2.6)
+title_gold_mat = bpy.data.materials.new("TitleCinemaGold")
+title_gold_mat.use_nodes = True
+_tbsdf = title_gold_mat.node_tree.nodes["Principled BSDF"]
+set_bsdf(_tbsdf, "Base Color", (1.0, 0.76, 0.24, 1.0))
+set_bsdf(_tbsdf, "Metallic", 0.72)
+set_bsdf(_tbsdf, "Roughness", 0.24)
+set_bsdf(_tbsdf, "Emission Color", (1.0, 0.70, 0.18, 1.0))
+set_bsdf(_tbsdf, "Emission Strength", 1.75)
+
+FONT_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "subtitles", "fonts", "DejaVuSans-Bold.ttf"))
+HERO_FONT = bpy.data.fonts.load(FONT_PATH) if os.path.isfile(FONT_PATH) else None
+
 
 # ============================================================================
 # 5. SMOOTH-SHADED & PROCEDURAL SPRING / HEX-CELL GEOMETRY HELPERS
@@ -718,26 +733,32 @@ add_box("MicrographiaPages", (FOLIO_POS.x + 0.004, FOLIO_POS.y, 0.024), (0.345, 
 add_box("MicrographiaClasp1", (FOLIO_POS.x - 0.175, FOLIO_POS.y + 0.06, 0.024), (0.022, 0.032, 0.052), brass_mat, rot=(0, 0, -0.04))
 add_box("MicrographiaClasp2", (FOLIO_POS.x - 0.175, FOLIO_POS.y - 0.06, 0.024), (0.022, 0.032, 0.052), brass_mat, rot=(0, 0, -0.04))
 
-# Floating 3D Anagram Text (Beat 2a: 4.5-7.1s) -> Snaps into Glowing 3D 'F = -kx' (Beat 2b & Finale!)
+# Floating 3D Anagram Text (Beat 2a: 4.5-7.1s) -> Snaps into Glowing 3D 'F = - k x' (Beat 2b!)
 bpy.ops.object.text_add(location=(FOLIO_POS.x, FOLIO_POS.y, 0.26), rotation=(math.pi * 0.5, 0.0, 0.0))
 anagram_txt = bpy.context.active_object
 anagram_txt.name = "HookeAnagramCipher"
+if HERO_FONT is not None:
+    anagram_txt.data.font = HERO_FONT
 anagram_txt.data.body = "ceiiinosssttuv"
 anagram_txt.data.align_x = "CENTER"
-anagram_txt.data.size = 0.072
-anagram_txt.data.extrude = 0.010
-anagram_txt.data.bevel_depth = 0.002
-anagram_txt.data.materials.append(gold_glow_mat)
+anagram_txt.data.size = 0.056
+anagram_txt.data.space_character = 1.24
+anagram_txt.data.extrude = 0.0045
+anagram_txt.data.bevel_depth = 0.0005
+anagram_txt.data.materials.append(text_gold_mat)
 
 bpy.ops.object.text_add(location=(FOLIO_POS.x, FOLIO_POS.y, 0.28), rotation=(math.pi * 0.5, 0.0, 0.0))
 formula_txt = bpy.context.active_object
 formula_txt.name = "HookeFormula3D"
-formula_txt.data.body = "F = -kx"
+if HERO_FONT is not None:
+    formula_txt.data.font = HERO_FONT
+formula_txt.data.body = "F = - k x"
 formula_txt.data.align_x = "CENTER"
-formula_txt.data.size = 0.125
-formula_txt.data.extrude = 0.016
-formula_txt.data.bevel_depth = 0.003
-formula_txt.data.materials.append(cyan_glow_mat)
+formula_txt.data.size = 0.102
+formula_txt.data.space_character = 1.12
+formula_txt.data.extrude = 0.0065
+formula_txt.data.bevel_depth = 0.0007
+formula_txt.data.materials.append(text_cyan_mat)
 
 
 # ============================================================================
@@ -900,16 +921,21 @@ for r_i in range(10):
     rung = add_cyl(f"DNARung_{r_i}", (0.0, 0.0, zr), 0.005, 0.185, gold_glow_mat, rot=(0.0, math.pi * 0.5, ang), verts=12)
     rung.parent = dna_group
 
-# Subtle 3D Brass Banner Title in upper window header during Beats 5-6!
-bpy.ops.object.text_add(location=(0.0, 0.58, 1.32), rotation=(math.pi * 0.5, 0.0, 0.0))
+# Crisp Self-Luminous Cinema Gold 3D Banner Title centered cleanly inside upper sapphire window pane (Beats 5-6!)
+bpy.ops.object.text_add(location=(0.0, 0.58, 1.52), rotation=(math.pi * 0.5, 0.0, 0.0))
 title_txt = bpy.context.active_object
 title_txt.name = "HookeTitle3D"
-title_txt.data.body = "HOOKE'S LAW  F = -kx"
+if HERO_FONT is not None:
+    title_txt.data.font = HERO_FONT
+title_txt.data.body = "HOOKE'S LAW\nF = - k x"
 title_txt.data.align_x = "CENTER"
-title_txt.data.size = 0.088
-title_txt.data.extrude = 0.011
-title_txt.data.bevel_depth = 0.0025
-title_txt.data.materials.append(brass_mat)
+title_txt.data.align_y = "CENTER"
+title_txt.data.size = 0.082
+title_txt.data.space_character = 1.14
+title_txt.data.space_line = 1.25
+title_txt.data.extrude = 0.0065
+title_txt.data.bevel_depth = 0.0007
+title_txt.data.materials.append(title_gold_mat)
 
 
 # ============================================================================

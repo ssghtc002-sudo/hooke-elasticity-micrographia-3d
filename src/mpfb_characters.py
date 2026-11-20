@@ -404,18 +404,42 @@ def _parent_to_bone(obj, rig, bone_name: str, local_pos: Vector, local_rot=None)
     obj.matrix_basis = w_mat
 
 
-def _measure_chest_front_y(basemesh, z_target: float, z_band: float = 0.04) -> float:
-    """Measure exact frontmost (-Y) center-chest coordinate on basemesh so cravat & buttons sit FLUSH ON TOP!"""
-    ys = [
-        v.co.y
-        for v in basemesh.data.vertices
-        if abs(v.co.x) < 0.045 and abs(v.co.z - z_target) < z_band and v.co.y < -0.02
-    ]
-    return min(ys) if ys else -0.125
+def _measure_front_y(basemesh, x_target: float, z_target: float, x_band: float = 0.025, z_band: float = 0.015, default_y: float = -0.145) -> float:
+    """Measure exact frontmost (-Y) skin surface on basemesh (excluding helper verts) at any (x, z)!"""
+    vg_names = {vg.index: vg.name for vg in basemesh.vertex_groups}
+    ys = []
+    for v in basemesh.data.vertices:
+        if abs(v.co.x - x_target) <= x_band and abs(v.co.z - z_target) <= z_band and v.co.y < -0.02:
+            if any(vg_names.get(g.group, "") in ("HelperGeometry", "JointCubes") and g.weight > 0.5 for g in v.groups):
+                continue
+            ys.append(v.co.y)
+    return min(ys) if ys else default_y
+
+
+def _add_tapered_curve(name: str, pts_with_rad: list[tuple[float, float, float, float]], bevel_depth: float, mat, rig, bone_name: str, origin: Vector):
+    """Build a smooth NURBS tapered 3D curve (hair lock, eyebrow, mustache) with organic pointed tips!"""
+    cd = bpy.data.curves.new(f"{name}_C", type="CURVE")
+    cd.dimensions = "3D"
+    cd.bevel_depth = bevel_depth
+    cd.bevel_resolution = 4
+    cd.use_fill_caps = True
+    sp = cd.splines.new("NURBS")
+    sp.points.add(len(pts_with_rad) - 1)
+    for k, (px, py, pz, rad) in enumerate(pts_with_rad):
+        sp.points[k].co = (px, py, pz, 1.0)
+        sp.points[k].radius = rad
+    sp.use_endpoint_u = True
+    sp.order_u = min(4, len(pts_with_rad))
+    obj = bpy.data.objects.new(name, cd)
+    bpy.context.scene.collection.objects.link(obj)
+    obj.data.materials.append(mat)
+    _parent_to_bone(obj, rig, bone_name, origin)
+    return obj
 
 
 def _attach_eyes_hair_and_costume(name: str, basemesh, rig, cfg: dict, eye_mat, hair_mat, coat_mat, linen_mat, brass_mat):
-    """Attach photorealistic eyeballs, 17th-century wavy hair/wig, eyebrows, mustache, lace cuffs, cravat & buttons!"""
+    """Attach photoreal eyes, organic NURBS tapered 17th-century hair/wig + bangs, surface-flush eyebrows/mustache,
+    pleated lace cravat jabot, lace wrist cuffs & chest-flush brass buttons!"""
     bones = rig.data.bones
 
     # 1. Photorealistic Eyeballs seated cleanly inside MPFB2 eye.L & eye.R sockets!
@@ -423,8 +447,8 @@ def _attach_eyes_hair_and_costume(name: str, basemesh, rig, cfg: dict, eye_mat, 
         bname = f"eye.{side}"
         if bname in bones:
             epos = bones[bname].head_local.copy()
-            epos.y -= 0.0035
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=16, radius=0.0132, location=(0, 0, 0))
+            epos.y -= 0.0040
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=16, radius=0.0136, location=(0, 0, 0))
             eye = bpy.context.active_object
             eye.name = f"{name}_Eye_{side}"
             for p in eye.data.polygons:
@@ -432,119 +456,155 @@ def _attach_eyes_hair_and_costume(name: str, basemesh, rig, cfg: dict, eye_mat, 
             eye.data.materials.append(eye_mat)
             _parent_to_bone(eye, rig, "head", epos)
 
-    # 2. Sculpted 17th-Century Flowing Wavy Hair Locks (Hooke) or Royal Society Powdered Wig (Rival)!
+    # 2. Organic Sculpted 17th-Century Hair / Royal Society Wig (Tapered NURBS Waves + Natural Forehead Framing!)
     if "head" in bones:
         h_head = bones["head"].head_local.copy()
         h_tail = bones["head"].tail_local.copy()
-        crown = Vector((0.0, h_head.y + 0.014, h_tail.z - 0.016))
+        crown = Vector((0.0, h_head.y + 0.008, h_tail.z - 0.018))
+        is_wig = cfg.get("style") == "wig"
 
-        bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=14, radius=0.098, location=(0, 0, 0))
+        # Form-fitting sculpted cranium hair base hugging upper forehead hairline cleanly (no bald bowling forehead!)
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=28, ring_count=16, radius=0.097, location=(0, 0, 0))
         cap = bpy.context.active_object
         cap.name = f"{name}_HairCap"
-        cap.scale = (0.95, 1.07, 0.92)
+        cap.scale = (0.97, 1.09, 0.90)
         bpy.ops.object.transform_apply(scale=True)
         for p in cap.data.polygons:
             p.use_smooth = True
         cap.data.materials.append(hair_mat)
-        _parent_to_bone(cap, rig, "head", crown + Vector((0.0, 0.022, -0.014)))
+        _parent_to_bone(cap, rig, "head", crown + Vector((0.0, 0.006, -0.012)))
 
-        is_wig = cfg.get("style") == "wig"
-        num_locks = 20 if is_wig else 18
+        # Soft Center-Parted Forehead Framing Waves sweeping gracefully back past the temples!
+        for side_sign in (-1.0, 1.0):
+            for layer in (0, 1):
+                z_off = 0.008 - layer * 0.016
+                pts_bang = [
+                    (side_sign * 0.006, -0.100, 0.018 + z_off, 0.55),
+                    (side_sign * 0.044, -0.096, 0.004 + z_off, 1.05),
+                    (side_sign * 0.086, -0.056, -0.036 + z_off, 1.15),
+                    (side_sign * 0.102, 0.002, -0.105 + z_off, 0.95),
+                    (side_sign * 0.096, 0.030, -0.175 + z_off, 0.35),
+                ]
+                _add_tapered_curve(
+                    f"{name}_FrontWave_{side_sign}_{layer}",
+                    pts_bang,
+                    0.019 if is_wig else 0.015,
+                    hair_mat,
+                    rig,
+                    "head",
+                    crown,
+                )
+
+        # Flowing Tapered Shoulder-Length Wavy Locks curving naturally down sides & back (ZERO chopped tubes!)
+        num_locks = 22 if is_wig else 20
         for i in range(num_locks):
-            ang = _lerp(math.radians(-118.0), math.radians(118.0), i / max(1, num_locks - 1))
+            u_ang = i / max(1, num_locks - 1)
+            ang = _lerp(math.radians(-128.0), math.radians(128.0), u_ang)
             sx = math.sin(ang) * (0.096 if is_wig else 0.088)
-            sy = math.cos(ang) * 0.105 + 0.016
-            lock_len = 0.25 if is_wig else 0.23
-            curve_data = bpy.data.curves.new(f"{name}_Lock_{i}_C", type="CURVE")
-            curve_data.dimensions = "3D"
-            curve_data.bevel_depth = 0.018 if is_wig else 0.015
-            curve_data.bevel_resolution = 4
-            sp = curve_data.splines.new("POLY")
-            sp.points.add(5)
-            for k in range(6):
-                u = k / 5.0
-                wave = math.sin(u * math.pi * 2.6 + i * 0.7) * 0.014
-                flare = 1.0 + u * (0.36 if is_wig else 0.22)
-                px = sx * flare + math.copysign(wave, sx) * 0.5
-                py = sy * (1.0 + u * 0.08) + wave * 0.4
-                pz = -u * lock_len
-                sp.points[k].co = (px, py, pz, 1.0)
-            lock = bpy.data.objects.new(f"{name}_HairLock_{i}", curve_data)
-            bpy.context.scene.collection.objects.link(lock)
-            lock.data.materials.append(hair_mat)
-            _parent_to_bone(lock, rig, "head", crown + Vector((0.0, 0.0, 0.005)))
+            sy = math.cos(ang) * 0.104 + 0.008
+            lock_len = (0.23 if is_wig else 0.22) + (i % 3) * 0.014
+            pts = []
+            for k in range(7):
+                u = k / 6.0
+                wave = math.sin(u * math.pi * 2.8 + i * 0.85) * (0.018 if is_wig else 0.015)
+                flare = 1.0 + math.sin(u * math.pi * 0.85) * (0.28 if is_wig else 0.18)
+                px = sx * flare + math.copysign(wave, sx) * 0.65
+                py = sy * (1.0 + u * 0.10) + wave * 0.35
+                pz = 0.010 - u * lock_len
+                # Taper cleanly to soft organic hair tips at bottom!
+                rad = 0.72 if k == 0 else (1.05 - 0.12 * u if k < 5 else (0.62 if k == 5 else 0.18))
+                pts.append((px, py, pz, rad))
+            _add_tapered_curve(
+                f"{name}_HairLock_{i}",
+                pts,
+                0.017 if is_wig else 0.014,
+                hair_mat,
+                rig,
+                "head",
+                crown,
+            )
 
-        # Sculpted Expressive Eyebrows seated cleanly above eye sockets!
-        for side in ("L", "R"):
-            bname = f"eye.{side}"
-            if bname in bones:
-                ep = bones[bname].head_local.copy()
-                sign = 1.0 if side == "L" else -1.0
-                cd = bpy.data.curves.new(f"{name}_Brow_{side}_C", type="CURVE")
-                cd.dimensions = "3D"
-                cd.bevel_depth = 0.0040
-                cd.bevel_resolution = 3
-                sp = cd.splines.new("POLY")
-                sp.points.add(3)
-                sp.points[0].co = (sign * -0.016, -0.016, 0.020, 1.0)
-                sp.points[1].co = (sign * -0.002, -0.018, 0.024, 1.0)
-                sp.points[2].co = (sign * 0.012, -0.015, 0.023, 1.0)
-                sp.points[3].co = (sign * 0.022, -0.008, 0.017, 1.0)
-                brow = bpy.data.objects.new(f"{name}_Brow_{side}", cd)
-                bpy.context.scene.collection.objects.link(brow)
-                brow.data.materials.append(hair_mat)
-                _parent_to_bone(brow, rig, "head", ep)
+        # Surface-Flush Expressive Sculpted Eyebrows (measured directly on basemesh skin so 100% visible!)
+        eye_z = bones["eye.L"].head_local.z if "eye.L" in bones else 0.736
+        brow_z = eye_z + 0.020
+        for sign, side in ((1.0, "L"), (-1.0, "R")):
+            y_in = _measure_front_y(basemesh, sign * 0.016, brow_z, 0.012, 0.010, -0.145) - 0.0035
+            y_mid = _measure_front_y(basemesh, sign * 0.034, brow_z + 0.004, 0.012, 0.010, -0.138) - 0.0035
+            y_out = _measure_front_y(basemesh, sign * 0.050, brow_z - 0.002, 0.012, 0.010, -0.128) - 0.0035
+            brow_pts = [
+                (sign * 0.014, y_in, brow_z - 0.001, 0.75),
+                (sign * 0.026, (y_in + y_mid) * 0.5, brow_z + 0.004, 1.15),
+                (sign * 0.040, y_mid, brow_z + 0.003, 0.95),
+                (sign * 0.052, y_out, brow_z - 0.004, 0.35),
+            ]
+            _add_tapered_curve(f"{name}_Brow_{side}", brow_pts, 0.0042, hair_mat, rig, "head", Vector((0, 0, 0)))
 
-        # Distinguished Mustache for Rival Watchmaker!
-        if cfg.get("mustache", False) and "jaw" in bones:
-            jp = bones["jaw"].head_local.copy()
-            for sign in (-1.0, 1.0):
-                cd = bpy.data.curves.new(f"{name}_Stache_{sign}_C", type="CURVE")
-                cd.dimensions = "3D"
-                cd.bevel_depth = 0.0058
-                cd.bevel_resolution = 3
-                sp = cd.splines.new("POLY")
-                sp.points.add(3)
-                sp.points[0].co = (sign * 0.004, -0.072, -0.022, 1.0)
-                sp.points[1].co = (sign * 0.022, -0.068, -0.024, 1.0)
-                sp.points[2].co = (sign * 0.042, -0.056, -0.028, 1.0)
-                sp.points[3].co = (sign * 0.054, -0.046, -0.020, 1.0)
-                st = bpy.data.objects.new(f"{name}_Stache_{sign}", cd)
-                bpy.context.scene.collection.objects.link(st)
-                st.data.materials.append(hair_mat)
-                _parent_to_bone(st, rig, "head", jp)
+        # Surface-Flush Distinguished Curled Mustache for Rival Watchmaker (100% outside upper lip!)
+        if cfg.get("mustache", False):
+            st_z = eye_z - 0.044
+            for sign, side in ((1.0, "L"), (-1.0, "R")):
+                y0 = _measure_front_y(basemesh, sign * 0.008, st_z, 0.012, 0.010, -0.156) - 0.0045
+                y1 = _measure_front_y(basemesh, sign * 0.024, st_z - 0.003, 0.012, 0.010, -0.146) - 0.0045
+                y2 = _measure_front_y(basemesh, sign * 0.040, st_z - 0.007, 0.012, 0.010, -0.132) - 0.0040
+                st_pts = [
+                    (sign * 0.004, y0, st_z, 0.75),
+                    (sign * 0.020, y1, st_z - 0.002, 1.15),
+                    (sign * 0.036, y2, st_z - 0.006, 0.85),
+                    (sign * 0.048, y2 + 0.004, st_z + 0.002, 0.22),
+                ]
+                _add_tapered_curve(f"{name}_Stache_{side}", st_pts, 0.0056, hair_mat, rig, "head", Vector((0, 0, 0)))
 
-    # 3. 3D Sculpted 1665 Linen Cravat Jabot + Gold Collar Trim + 4 Brass Coat Buttons (exact chest-surface flush!)
+    # 3. Tailored Flat-Pleated 1665 Lace Cravat Jabot + Brooch + Brass Doublet Buttons (NO paper-cup cone!)
     if "spine01" in bones:
         sp1 = bones["spine01"].tail_local.copy()
-        cravat_z = sp1.z - 0.070
-        cravat_y = _measure_chest_front_y(basemesh, cravat_z) - 0.018
-
-        # Flowing layered linen cravat jabot right over the V-neck!
-        bpy.ops.mesh.primitive_cone_add(vertices=20, radius1=0.054, radius2=0.026, depth=0.145, location=(0, 0, 0))
-        cravat = bpy.context.active_object
-        cravat.name = f"{name}_LinenCravat"
-        cravat.scale = (1.15, 0.40, 1.0)
-        bpy.ops.object.transform_apply(scale=True)
-        for p in cravat.data.polygons:
-            p.use_smooth = True
-        cravat.data.materials.append(linen_mat)
-        _parent_to_bone(cravat, rig, "spine01", Vector((0.0, cravat_y, cravat_z)))
-
-        # Crisp upright 1665 turned velvet/linen collar band wrapping the throat cleanly
-        bpy.ops.mesh.primitive_torus_add(major_segments=28, minor_segments=12, major_radius=0.064, minor_radius=0.015, location=(0, 0, 0))
+        # Crisp upright linen neckband hugging throat cleanly
+        bpy.ops.mesh.primitive_torus_add(major_segments=28, minor_segments=12, major_radius=0.062, minor_radius=0.013, location=(0, 0, 0))
         collar = bpy.context.active_object
         collar.name = f"{name}_CollarBand"
         for p in collar.data.polygons:
             p.use_smooth = True
         collar.data.materials.append(linen_mat)
-        _parent_to_bone(collar, rig, "spine01", Vector((0.0, sp1.y - 0.008, sp1.z + 0.006)))
+        _parent_to_bone(collar, rig, "spine01", Vector((0.0, sp1.y - 0.008, sp1.z + 0.005)))
+
+        # 3 Sleek Layered Linen Lace Cravat Pleats resting flat & gracefully inside the V-neck!
+        for pl_i, (pw, ph, dz, dy) in enumerate([
+            (0.056, 0.055, -0.042, -0.010),
+            (0.072, 0.068, -0.078, -0.013),
+            (0.060, 0.062, -0.114, -0.015),
+        ]):
+            pz = sp1.z + dz
+            py = _measure_front_y(basemesh, 0.0, pz, 0.040, 0.025, -0.120) + dy
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, 0))
+            pleat = bpy.context.active_object
+            pleat.name = f"{name}_CravatPleat_{pl_i}"
+            pleat.scale = (pw, 0.011, ph)
+            bpy.ops.object.transform_apply(scale=True)
+            bv = pleat.modifiers.new("Bevel", "BEVEL")
+            bv.width = 0.0045
+            bv.segments = 2
+            for p in pleat.data.polygons:
+                p.use_smooth = True
+            pleat.data.materials.append(linen_mat)
+            _parent_to_bone(pleat, rig, "spine01", Vector((0.0, py, pz)), Euler((math.radians(8.0), 0.0, 0.0)))
+
+        # Small gleaming gold cravat clasp pin at throat!
+        pin_z = sp1.z - 0.036
+        pin_y = _measure_front_y(basemesh, 0.0, pin_z, 0.035, 0.020, -0.115) - 0.020
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=14, ring_count=10, radius=0.0095, location=(0, 0, 0))
+        pin = bpy.context.active_object
+        pin.name = f"{name}_CravatPin"
+        pin.scale = (1.1, 0.55, 1.3)
+        bpy.ops.object.transform_apply(scale=True)
+        for p in pin.data.polygons:
+            p.use_smooth = True
+        pin.data.materials.append(brass_mat)
+        _parent_to_bone(pin, rig, "spine01", Vector((0.0, pin_y, pin_z)))
 
         # 4 Gleaming Brass Period Doublet Buttons cleanly seated outside the 3D Velvet Coat front!
         for b_i in range(4):
             bz = sp1.z - 0.165 - b_i * 0.055
-            by = _measure_chest_front_y(basemesh, bz) - 0.017
-            bpy.ops.mesh.primitive_uv_sphere_add(segments=14, ring_count=10, radius=0.0105, location=(0, 0, 0))
+            by = _measure_front_y(basemesh, 0.0, bz, 0.040, 0.025, -0.125) - 0.018
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=14, ring_count=10, radius=0.010, location=(0, 0, 0))
             btn = bpy.context.active_object
             btn.name = f"{name}_Button_{b_i}"
             btn.scale = (1.0, 0.55, 1.0)
