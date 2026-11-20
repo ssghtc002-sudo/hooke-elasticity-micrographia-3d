@@ -45,14 +45,14 @@ EIGHTH = BEAT * 0.5
 SIXTEENTH = BEAT * 0.25
 
 TTS_OVERRIDES: dict[str, str] = {
-    "L1": "Pull a metal spring twice as far, and it pulls back twice as hard.",
-    "L2": "A scrambled riddle? Prove your hidden law!",
-    "L3": "As the stretch, so the force, F equals minus K X!",
-    "L4": "With his brass microscope, Robert Hooke peered into cork, and named its honeycomb rooms cells!",
-    "L5": "Push a spring past its elastic limit, and it snaps forever.",
-    "L6": "Hey, that ruined my watch!",
-    "L7": "Tame that tiny hairspring inside a balance wheel, and humanity mastered portable time.",
-    "L8": "Car suspensions, skyscrapers, even DNA strands today? Still obeying Hooke's law.",
+    "L1": "Hang one weight on a spring, it stretches. Double the weight, it stretches twice as far!",
+    "L2": "Scrambled Latin letters, Hooke? Explain your hidden law!",
+    "L3": "More stretch means more pullback, F equals minus K X!",
+    "L4": "Next, Hooke aimed his brass microscope at cork, and named those tiny honeycomb rooms cells!",
+    "L5": "Warning: stretch past the elastic limit, and metal deforms forever.",
+    "L6": "No! You snapped my watch spring!",
+    "L7": "Yet Hooke's tiny spiral hairspring tamed the pocket watch, shrinking clocks to fit your palm!",
+    "L8": "Car shocks, skyscrapers, even DNA coils today, all obey Robert Hooke's law.",
 }
 
 

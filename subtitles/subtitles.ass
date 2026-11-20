@@ -10,90 +10,95 @@ Style: Default,DejaVu Sans,64,&H00FFFFFF,&H00F8BD38,&H00120803,&H96000000,-1,0,0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.18,0:00:00.48,Default,,0,0,0,,{\c&H00F8BD38&}Pull{\c&H00FFFFFF&} a metal\Nspring twice
-Dialogue: 0,0:00:00.48,0:00:00.59,Default,,0,0,0,,Pull {\c&H00F8BD38&}a{\c&H00FFFFFF&} metal\Nspring twice
-Dialogue: 0,0:00:00.59,0:00:00.98,Default,,0,0,0,,Pull a {\c&H00F8BD38&}metal{\c&H00FFFFFF&}\Nspring twice
-Dialogue: 0,0:00:00.98,0:00:01.43,Default,,0,0,0,,Pull a metal\N{\c&H00F8BD38&}spring{\c&H00FFFFFF&} twice
-Dialogue: 0,0:00:01.43,0:00:01.82,Default,,0,0,0,,Pull a metal\Nspring {\c&H00F8BD38&}twice{\c&H00FFFFFF&}
-Dialogue: 0,0:00:01.82,0:00:01.97,Default,,0,0,0,,{\c&H00F8BD38&}as{\c&H00FFFFFF&} far—
-Dialogue: 0,0:00:01.97,0:00:02.20,Default,,0,0,0,,as {\c&H00F8BD38&}far—{\c&H00FFFFFF&}
-Dialogue: 0,0:00:02.20,0:00:02.43,Default,,0,0,0,,{\c&H00F8BD38&}and{\c&H00FFFFFF&} it pulls\Nback twice
-Dialogue: 0,0:00:02.43,0:00:02.58,Default,,0,0,0,,and {\c&H00F8BD38&}it{\c&H00FFFFFF&} pulls\Nback twice
-Dialogue: 0,0:00:02.58,0:00:02.96,Default,,0,0,0,,and it {\c&H00F8BD38&}pulls{\c&H00FFFFFF&}\Nback twice
-Dialogue: 0,0:00:02.96,0:00:03.27,Default,,0,0,0,,and it pulls\N{\c&H00F8BD38&}back{\c&H00FFFFFF&} twice
-Dialogue: 0,0:00:03.27,0:00:03.65,Default,,0,0,0,,and it pulls\Nback {\c&H00F8BD38&}twice{\c&H00FFFFFF&}
-Dialogue: 0,0:00:03.65,0:00:03.80,Default,,0,0,0,,{\c&H00F8BD38&}as{\c&H00FFFFFF&} hard.
-Dialogue: 0,0:00:03.80,0:00:04.10,Default,,0,0,0,,as {\c&H00F8BD38&}hard.{\c&H00FFFFFF&}
-Dialogue: 0,0:00:04.58,0:00:04.67,Default,,0,0,0,,{\c&H00F8BD38&}A{\c&H00FFFFFF&} scrambled riddle?
-Dialogue: 0,0:00:04.67,0:00:05.27,Default,,0,0,0,,A {\c&H00F8BD38&}scrambled{\c&H00FFFFFF&} riddle?
-Dialogue: 0,0:00:05.27,0:00:05.66,Default,,0,0,0,,A scrambled {\c&H00F8BD38&}riddle?{\c&H00FFFFFF&}
-Dialogue: 0,0:00:05.66,0:00:05.99,Default,,0,0,0,,{\c&H00F8BD38&}Prove{\c&H00FFFFFF&} your hidden law!
-Dialogue: 0,0:00:05.99,0:00:06.25,Default,,0,0,0,,Prove {\c&H00F8BD38&}your{\c&H00FFFFFF&} hidden law!
-Dialogue: 0,0:00:06.25,0:00:06.65,Default,,0,0,0,,Prove your {\c&H00F8BD38&}hidden{\c&H00FFFFFF&} law!
-Dialogue: 0,0:00:06.65,0:00:06.84,Default,,0,0,0,,Prove your hidden {\c&H00F8BD38&}law!{\c&H00FFFFFF&}
-Dialogue: 0,0:00:07.12,0:00:07.24,Default,,0,0,0,,{\c&H00F8BD38&}As{\c&H00FFFFFF&} the stretch,
-Dialogue: 0,0:00:07.24,0:00:07.41,Default,,0,0,0,,As {\c&H00F8BD38&}the{\c&H00FFFFFF&} stretch,
-Dialogue: 0,0:00:07.41,0:00:07.81,Default,,0,0,0,,As the {\c&H00F8BD38&}stretch,{\c&H00FFFFFF&}
-Dialogue: 0,0:00:07.81,0:00:07.93,Default,,0,0,0,,{\c&H00F8BD38&}so{\c&H00FFFFFF&} the force—
-Dialogue: 0,0:00:07.93,0:00:08.10,Default,,0,0,0,,so {\c&H00F8BD38&}the{\c&H00FFFFFF&} force—
-Dialogue: 0,0:00:08.10,0:00:08.38,Default,,0,0,0,,so the {\c&H00F8BD38&}force—{\c&H00FFFFFF&}
-Dialogue: 0,0:00:08.38,0:00:08.47,Default,,0,0,0,,{\c&H00F8BD38&}F{\c&H00FFFFFF&} equals minus\Nk x!
-Dialogue: 0,0:00:08.47,0:00:08.81,Default,,0,0,0,,F {\c&H00F8BD38&}equals{\c&H00FFFFFF&} minus\Nk x!
-Dialogue: 0,0:00:08.81,0:00:09.10,Default,,0,0,0,,F equals {\c&H00F8BD38&}minus{\c&H00FFFFFF&}\Nk x!
-Dialogue: 0,0:00:09.10,0:00:09.18,Default,,0,0,0,,F equals minus\N{\c&H00F8BD38&}k{\c&H00FFFFFF&} x!
-Dialogue: 0,0:00:09.18,0:00:09.27,Default,,0,0,0,,F equals minus\Nk {\c&H00F8BD38&}x!{\c&H00FFFFFF&}
-Dialogue: 0,0:00:09.62,0:00:09.90,Default,,0,0,0,,{\c&H00F8BD38&}With{\c&H00FFFFFF&} his brass microscope,
-Dialogue: 0,0:00:09.90,0:00:10.11,Default,,0,0,0,,With {\c&H00F8BD38&}his{\c&H00FFFFFF&} brass microscope,
-Dialogue: 0,0:00:10.11,0:00:10.46,Default,,0,0,0,,With his {\c&H00F8BD38&}brass{\c&H00FFFFFF&} microscope,
-Dialogue: 0,0:00:10.46,0:00:11.16,Default,,0,0,0,,With his brass {\c&H00F8BD38&}microscope,{\c&H00FFFFFF&}
-Dialogue: 0,0:00:11.16,0:00:11.57,Default,,0,0,0,,{\c&H00F8BD38&}Robert{\c&H00FFFFFF&} Hooke peered\Ninto cork—
-Dialogue: 0,0:00:11.57,0:00:11.92,Default,,0,0,0,,Robert {\c&H00F8BD38&}Hooke{\c&H00FFFFFF&} peered\Ninto cork—
-Dialogue: 0,0:00:11.92,0:00:12.34,Default,,0,0,0,,Robert Hooke {\c&H00F8BD38&}peered{\c&H00FFFFFF&}\Ninto cork—
-Dialogue: 0,0:00:12.34,0:00:12.62,Default,,0,0,0,,Robert Hooke peered\N{\c&H00F8BD38&}into{\c&H00FFFFFF&} cork—
-Dialogue: 0,0:00:12.62,0:00:12.90,Default,,0,0,0,,Robert Hooke peered\Ninto {\c&H00F8BD38&}cork—{\c&H00FFFFFF&}
-Dialogue: 0,0:00:12.90,0:00:13.10,Default,,0,0,0,,{\c&H00F8BD38&}and{\c&H00FFFFFF&} named its\Nhoneycomb rooms 'cells'!
-Dialogue: 0,0:00:13.10,0:00:13.45,Default,,0,0,0,,and {\c&H00F8BD38&}named{\c&H00FFFFFF&} its\Nhoneycomb rooms 'cells'!
-Dialogue: 0,0:00:13.45,0:00:13.66,Default,,0,0,0,,and named {\c&H00F8BD38&}its{\c&H00FFFFFF&}\Nhoneycomb rooms 'cells'!
-Dialogue: 0,0:00:13.66,0:00:14.29,Default,,0,0,0,,and named its\N{\c&H00F8BD38&}honeycomb{\c&H00FFFFFF&} rooms 'cells'!
-Dialogue: 0,0:00:14.29,0:00:14.64,Default,,0,0,0,,and named its\Nhoneycomb {\c&H00F8BD38&}rooms{\c&H00FFFFFF&} 'cells'!
-Dialogue: 0,0:00:14.64,0:00:14.98,Default,,0,0,0,,and named its\Nhoneycomb rooms {\c&H00F8BD38&}'cells'!{\c&H00FFFFFF&}
-Dialogue: 0,0:00:15.62,0:00:15.84,Default,,0,0,0,,{\c&H00F8BD38&}Push{\c&H00FFFFFF&} a spring\Npast its elastic
-Dialogue: 0,0:00:15.84,0:00:15.93,Default,,0,0,0,,Push {\c&H00F8BD38&}a{\c&H00FFFFFF&} spring\Npast its elastic
-Dialogue: 0,0:00:15.93,0:00:16.25,Default,,0,0,0,,Push a {\c&H00F8BD38&}spring{\c&H00FFFFFF&}\Npast its elastic
-Dialogue: 0,0:00:16.25,0:00:16.47,Default,,0,0,0,,Push a spring\N{\c&H00F8BD38&}past{\c&H00FFFFFF&} its elastic
-Dialogue: 0,0:00:16.47,0:00:16.64,Default,,0,0,0,,Push a spring\Npast {\c&H00F8BD38&}its{\c&H00FFFFFF&} elastic
-Dialogue: 0,0:00:16.64,0:00:17.02,Default,,0,0,0,,Push a spring\Npast its {\c&H00F8BD38&}elastic{\c&H00FFFFFF&}
-Dialogue: 0,0:00:17.02,0:00:17.29,Default,,0,0,0,,{\c&H00F8BD38&}limit—{\c&H00FFFFFF&}and it\Nsnaps forever.
-Dialogue: 0,0:00:17.29,0:00:17.46,Default,,0,0,0,,limit—{\c&H00F8BD38&}and{\c&H00FFFFFF&} it\Nsnaps forever.
-Dialogue: 0,0:00:17.46,0:00:17.57,Default,,0,0,0,,limit—and {\c&H00F8BD38&}it{\c&H00FFFFFF&}\Nsnaps forever.
-Dialogue: 0,0:00:17.57,0:00:17.84,Default,,0,0,0,,limit—and it\N{\c&H00F8BD38&}snaps{\c&H00FFFFFF&} forever.
-Dialogue: 0,0:00:17.84,0:00:18.22,Default,,0,0,0,,limit—and it\Nsnaps {\c&H00F8BD38&}forever.{\c&H00FFFFFF&}
-Dialogue: 0,0:00:18.62,0:00:18.84,Default,,0,0,0,,{\c&H00F8BD38&}Hey—{\c&H00FFFFFF&}that ruined\Nmy watch!
-Dialogue: 0,0:00:18.84,0:00:19.13,Default,,0,0,0,,Hey—{\c&H00F8BD38&}that{\c&H00FFFFFF&} ruined\Nmy watch!
-Dialogue: 0,0:00:19.13,0:00:19.56,Default,,0,0,0,,Hey—that {\c&H00F8BD38&}ruined{\c&H00FFFFFF&}\Nmy watch!
-Dialogue: 0,0:00:19.56,0:00:19.70,Default,,0,0,0,,Hey—that ruined\N{\c&H00F8BD38&}my{\c&H00FFFFFF&} watch!
-Dialogue: 0,0:00:19.70,0:00:20.06,Default,,0,0,0,,Hey—that ruined\Nmy {\c&H00F8BD38&}watch!{\c&H00FFFFFF&}
-Dialogue: 0,0:00:20.62,0:00:20.87,Default,,0,0,0,,{\c&H00F8BD38&}Tame{\c&H00FFFFFF&} that tiny\Nhairspring inside
-Dialogue: 0,0:00:20.87,0:00:21.11,Default,,0,0,0,,Tame {\c&H00F8BD38&}that{\c&H00FFFFFF&} tiny\Nhairspring inside
-Dialogue: 0,0:00:21.11,0:00:21.35,Default,,0,0,0,,Tame that {\c&H00F8BD38&}tiny{\c&H00FFFFFF&}\Nhairspring inside
-Dialogue: 0,0:00:21.35,0:00:21.95,Default,,0,0,0,,Tame that tiny\N{\c&H00F8BD38&}hairspring{\c&H00FFFFFF&} inside
-Dialogue: 0,0:00:21.95,0:00:22.31,Default,,0,0,0,,Tame that tiny\Nhairspring {\c&H00F8BD38&}inside{\c&H00FFFFFF&}
-Dialogue: 0,0:00:22.31,0:00:22.40,Default,,0,0,0,,{\c&H00F8BD38&}a{\c&H00FFFFFF&} balance wheel—
-Dialogue: 0,0:00:22.40,0:00:22.83,Default,,0,0,0,,a {\c&H00F8BD38&}balance{\c&H00FFFFFF&} wheel—
-Dialogue: 0,0:00:22.83,0:00:23.13,Default,,0,0,0,,a balance {\c&H00F8BD38&}wheel—{\c&H00FFFFFF&}
-Dialogue: 0,0:00:23.13,0:00:23.31,Default,,0,0,0,,{\c&H00F8BD38&}and{\c&H00FFFFFF&} humanity mastered\Nportable time.
-Dialogue: 0,0:00:23.31,0:00:23.79,Default,,0,0,0,,and {\c&H00F8BD38&}humanity{\c&H00FFFFFF&} mastered\Nportable time.
-Dialogue: 0,0:00:23.79,0:00:24.27,Default,,0,0,0,,and humanity {\c&H00F8BD38&}mastered{\c&H00FFFFFF&}\Nportable time.
-Dialogue: 0,0:00:24.27,0:00:24.75,Default,,0,0,0,,and humanity mastered\N{\c&H00F8BD38&}portable{\c&H00FFFFFF&} time.
-Dialogue: 0,0:00:24.75,0:00:25.00,Default,,0,0,0,,and humanity mastered\Nportable {\c&H00F8BD38&}time.{\c&H00FFFFFF&}
-Dialogue: 0,0:00:25.62,0:00:25.79,Default,,0,0,0,,{\c&H00F8BD38&}Car{\c&H00FFFFFF&} suspensions,
-Dialogue: 0,0:00:25.79,0:00:26.41,Default,,0,0,0,,Car {\c&H00F8BD38&}suspensions,{\c&H00FFFFFF&}
-Dialogue: 0,0:00:26.41,0:00:27.03,Default,,0,0,0,,{\c&H00F8BD38&}skyscrapers,{\c&H00FFFFFF&} even DNA\Nstrands today?
-Dialogue: 0,0:00:27.03,0:00:27.26,Default,,0,0,0,,skyscrapers, {\c&H00F8BD38&}even{\c&H00FFFFFF&} DNA\Nstrands today?
-Dialogue: 0,0:00:27.26,0:00:27.43,Default,,0,0,0,,skyscrapers, even {\c&H00F8BD38&}DNA{\c&H00FFFFFF&}\Nstrands today?
-Dialogue: 0,0:00:27.43,0:00:27.82,Default,,0,0,0,,skyscrapers, even DNA\N{\c&H00F8BD38&}strands{\c&H00FFFFFF&} today?
-Dialogue: 0,0:00:27.82,0:00:28.10,Default,,0,0,0,,skyscrapers, even DNA\Nstrands {\c&H00F8BD38&}today?{\c&H00FFFFFF&}
-Dialogue: 0,0:00:28.10,0:00:28.38,Default,,0,0,0,,{\c&H00F8BD38&}Still{\c&H00FFFFFF&} obeying Hooke's law.
-Dialogue: 0,0:00:28.38,0:00:28.78,Default,,0,0,0,,Still {\c&H00F8BD38&}obeying{\c&H00FFFFFF&} Hooke's law.
-Dialogue: 0,0:00:28.78,0:00:29.11,Default,,0,0,0,,Still obeying {\c&H00F8BD38&}Hooke's{\c&H00FFFFFF&} law.
-Dialogue: 0,0:00:29.11,0:00:29.28,Default,,0,0,0,,Still obeying Hooke's {\c&H00F8BD38&}law.{\c&H00FFFFFF&}
+Dialogue: 0,0:00:00.18,0:00:00.39,Default,,0,0,0,,{\c&H00F8BD38&}Hang{\c&H00FFFFFF&} one weight\Non a spring,
+Dialogue: 0,0:00:00.39,0:00:00.55,Default,,0,0,0,,Hang {\c&H00F8BD38&}one{\c&H00FFFFFF&} weight\Non a spring,
+Dialogue: 0,0:00:00.55,0:00:00.87,Default,,0,0,0,,Hang one {\c&H00F8BD38&}weight{\c&H00FFFFFF&}\Non a spring,
+Dialogue: 0,0:00:00.87,0:00:00.97,Default,,0,0,0,,Hang one weight\N{\c&H00F8BD38&}on{\c&H00FFFFFF&} a spring,
+Dialogue: 0,0:00:00.97,0:00:01.05,Default,,0,0,0,,Hang one weight\Non {\c&H00F8BD38&}a{\c&H00FFFFFF&} spring,
+Dialogue: 0,0:00:01.05,0:00:01.37,Default,,0,0,0,,Hang one weight\Non a {\c&H00F8BD38&}spring,{\c&H00FFFFFF&}
+Dialogue: 0,0:00:01.37,0:00:01.48,Default,,0,0,0,,{\c&H00F8BD38&}it{\c&H00FFFFFF&} stretches.
+Dialogue: 0,0:00:01.48,0:00:01.96,Default,,0,0,0,,it {\c&H00F8BD38&}stretches.{\c&H00FFFFFF&}
+Dialogue: 0,0:00:01.96,0:00:02.28,Default,,0,0,0,,{\c&H00F8BD38&}Double{\c&H00FFFFFF&} the weight—
+Dialogue: 0,0:00:02.28,0:00:02.43,Default,,0,0,0,,Double {\c&H00F8BD38&}the{\c&H00FFFFFF&} weight—
+Dialogue: 0,0:00:02.43,0:00:02.75,Default,,0,0,0,,Double the {\c&H00F8BD38&}weight—{\c&H00FFFFFF&}
+Dialogue: 0,0:00:02.75,0:00:02.86,Default,,0,0,0,,{\c&H00F8BD38&}it{\c&H00FFFFFF&} stretches twice\Nas far!
+Dialogue: 0,0:00:02.86,0:00:03.34,Default,,0,0,0,,it {\c&H00F8BD38&}stretches{\c&H00FFFFFF&} twice\Nas far!
+Dialogue: 0,0:00:03.34,0:00:03.60,Default,,0,0,0,,it stretches {\c&H00F8BD38&}twice{\c&H00FFFFFF&}\Nas far!
+Dialogue: 0,0:00:03.60,0:00:03.71,Default,,0,0,0,,it stretches twice\N{\c&H00F8BD38&}as{\c&H00FFFFFF&} far!
+Dialogue: 0,0:00:03.71,0:00:03.87,Default,,0,0,0,,it stretches twice\Nas {\c&H00F8BD38&}far!{\c&H00FFFFFF&}
+Dialogue: 0,0:00:04.58,0:00:04.98,Default,,0,0,0,,{\c&H00F8BD38&}Scrambled{\c&H00FFFFFF&} Latin letters,
+Dialogue: 0,0:00:04.98,0:00:05.21,Default,,0,0,0,,Scrambled {\c&H00F8BD38&}Latin{\c&H00FFFFFF&} letters,
+Dialogue: 0,0:00:05.21,0:00:05.52,Default,,0,0,0,,Scrambled Latin {\c&H00F8BD38&}letters,{\c&H00FFFFFF&}
+Dialogue: 0,0:00:05.52,0:00:05.75,Default,,0,0,0,,{\c&H00F8BD38&}Hooke?{\c&H00FFFFFF&} Explain your\Nhidden law!
+Dialogue: 0,0:00:05.75,0:00:06.07,Default,,0,0,0,,Hooke? {\c&H00F8BD38&}Explain{\c&H00FFFFFF&} your\Nhidden law!
+Dialogue: 0,0:00:06.07,0:00:06.25,Default,,0,0,0,,Hooke? Explain {\c&H00F8BD38&}your{\c&H00FFFFFF&}\Nhidden law!
+Dialogue: 0,0:00:06.25,0:00:06.52,Default,,0,0,0,,Hooke? Explain your\N{\c&H00F8BD38&}hidden{\c&H00FFFFFF&} law!
+Dialogue: 0,0:00:06.52,0:00:06.65,Default,,0,0,0,,Hooke? Explain your\Nhidden {\c&H00F8BD38&}law!{\c&H00FFFFFF&}
+Dialogue: 0,0:00:07.12,0:00:07.32,Default,,0,0,0,,{\c&H00F8BD38&}More{\c&H00FFFFFF&} stretch means\Nmore pullback—
+Dialogue: 0,0:00:07.32,0:00:07.67,Default,,0,0,0,,More {\c&H00F8BD38&}stretch{\c&H00FFFFFF&} means\Nmore pullback—
+Dialogue: 0,0:00:07.67,0:00:07.91,Default,,0,0,0,,More stretch {\c&H00F8BD38&}means{\c&H00FFFFFF&}\Nmore pullback—
+Dialogue: 0,0:00:07.91,0:00:08.11,Default,,0,0,0,,More stretch means\N{\c&H00F8BD38&}more{\c&H00FFFFFF&} pullback—
+Dialogue: 0,0:00:08.11,0:00:08.50,Default,,0,0,0,,More stretch means\Nmore {\c&H00F8BD38&}pullback—{\c&H00FFFFFF&}
+Dialogue: 0,0:00:08.50,0:00:08.58,Default,,0,0,0,,{\c&H00F8BD38&}F{\c&H00FFFFFF&} equals minus\Nk x!
+Dialogue: 0,0:00:08.58,0:00:08.87,Default,,0,0,0,,F {\c&H00F8BD38&}equals{\c&H00FFFFFF&} minus\Nk x!
+Dialogue: 0,0:00:08.87,0:00:09.12,Default,,0,0,0,,F equals {\c&H00F8BD38&}minus{\c&H00FFFFFF&}\Nk x!
+Dialogue: 0,0:00:09.12,0:00:09.19,Default,,0,0,0,,F equals minus\N{\c&H00F8BD38&}k{\c&H00FFFFFF&} x!
+Dialogue: 0,0:00:09.19,0:00:09.27,Default,,0,0,0,,F equals minus\Nk {\c&H00F8BD38&}x!{\c&H00FFFFFF&}
+Dialogue: 0,0:00:09.62,0:00:09.91,Default,,0,0,0,,{\c&H00F8BD38&}Next,{\c&H00FFFFFF&} Hooke aimed\Nhis brass microscope
+Dialogue: 0,0:00:09.91,0:00:10.28,Default,,0,0,0,,Next, {\c&H00F8BD38&}Hooke{\c&H00FFFFFF&} aimed\Nhis brass microscope
+Dialogue: 0,0:00:10.28,0:00:10.64,Default,,0,0,0,,Next, Hooke {\c&H00F8BD38&}aimed{\c&H00FFFFFF&}\Nhis brass microscope
+Dialogue: 0,0:00:10.64,0:00:10.86,Default,,0,0,0,,Next, Hooke aimed\N{\c&H00F8BD38&}his{\c&H00FFFFFF&} brass microscope
+Dialogue: 0,0:00:10.86,0:00:11.22,Default,,0,0,0,,Next, Hooke aimed\Nhis {\c&H00F8BD38&}brass{\c&H00FFFFFF&} microscope
+Dialogue: 0,0:00:11.22,0:00:11.94,Default,,0,0,0,,Next, Hooke aimed\Nhis brass {\c&H00F8BD38&}microscope{\c&H00FFFFFF&}
+Dialogue: 0,0:00:11.94,0:00:12.09,Default,,0,0,0,,{\c&H00F8BD38&}at{\c&H00FFFFFF&} cork—
+Dialogue: 0,0:00:12.09,0:00:12.38,Default,,0,0,0,,at {\c&H00F8BD38&}cork—{\c&H00FFFFFF&}
+Dialogue: 0,0:00:12.38,0:00:12.60,Default,,0,0,0,,{\c&H00F8BD38&}and{\c&H00FFFFFF&} named those tiny\Nhoneycomb rooms 'cells'!
+Dialogue: 0,0:00:12.60,0:00:12.96,Default,,0,0,0,,and {\c&H00F8BD38&}named{\c&H00FFFFFF&} those tiny\Nhoneycomb rooms 'cells'!
+Dialogue: 0,0:00:12.96,0:00:13.32,Default,,0,0,0,,and named {\c&H00F8BD38&}those{\c&H00FFFFFF&} tiny\Nhoneycomb rooms 'cells'!
+Dialogue: 0,0:00:13.32,0:00:13.61,Default,,0,0,0,,and named those {\c&H00F8BD38&}tiny{\c&H00FFFFFF&}\Nhoneycomb rooms 'cells'!
+Dialogue: 0,0:00:13.61,0:00:14.26,Default,,0,0,0,,and named those tiny\N{\c&H00F8BD38&}honeycomb{\c&H00FFFFFF&} rooms 'cells'!
+Dialogue: 0,0:00:14.26,0:00:14.62,Default,,0,0,0,,and named those tiny\Nhoneycomb {\c&H00F8BD38&}rooms{\c&H00FFFFFF&} 'cells'!
+Dialogue: 0,0:00:14.62,0:00:14.99,Default,,0,0,0,,and named those tiny\Nhoneycomb rooms {\c&H00F8BD38&}'cells'!{\c&H00FFFFFF&}
+Dialogue: 0,0:00:15.62,0:00:15.96,Default,,0,0,0,,{\c&H00F8BD38&}Warning:{\c&H00FFFFFF&} stretch past\Nthe elastic
+Dialogue: 0,0:00:15.96,0:00:16.30,Default,,0,0,0,,Warning: {\c&H00F8BD38&}stretch{\c&H00FFFFFF&} past\Nthe elastic
+Dialogue: 0,0:00:16.30,0:00:16.49,Default,,0,0,0,,Warning: stretch {\c&H00F8BD38&}past{\c&H00FFFFFF&}\Nthe elastic
+Dialogue: 0,0:00:16.49,0:00:16.63,Default,,0,0,0,,Warning: stretch past\N{\c&H00F8BD38&}the{\c&H00FFFFFF&} elastic
+Dialogue: 0,0:00:16.63,0:00:16.96,Default,,0,0,0,,Warning: stretch past\Nthe {\c&H00F8BD38&}elastic{\c&H00FFFFFF&}
+Dialogue: 0,0:00:16.96,0:00:17.20,Default,,0,0,0,,{\c&H00F8BD38&}limit,{\c&H00FFFFFF&} and metal\Ndeforms forever.
+Dialogue: 0,0:00:17.20,0:00:17.35,Default,,0,0,0,,limit, {\c&H00F8BD38&}and{\c&H00FFFFFF&} metal\Ndeforms forever.
+Dialogue: 0,0:00:17.35,0:00:17.59,Default,,0,0,0,,limit, and {\c&H00F8BD38&}metal{\c&H00FFFFFF&}\Ndeforms forever.
+Dialogue: 0,0:00:17.59,0:00:17.92,Default,,0,0,0,,limit, and metal\N{\c&H00F8BD38&}deforms{\c&H00FFFFFF&} forever.
+Dialogue: 0,0:00:17.92,0:00:18.26,Default,,0,0,0,,limit, and metal\Ndeforms {\c&H00F8BD38&}forever.{\c&H00FFFFFF&}
+Dialogue: 0,0:00:18.57,0:00:18.70,Default,,0,0,0,,{\c&H00F8BD38&}No!{\c&H00FFFFFF&} You snapped\Nmy watch spring!
+Dialogue: 0,0:00:18.70,0:00:18.90,Default,,0,0,0,,No! {\c&H00F8BD38&}You{\c&H00FFFFFF&} snapped\Nmy watch spring!
+Dialogue: 0,0:00:18.90,0:00:19.37,Default,,0,0,0,,No! You {\c&H00F8BD38&}snapped{\c&H00FFFFFF&}\Nmy watch spring!
+Dialogue: 0,0:00:19.37,0:00:19.50,Default,,0,0,0,,No! You snapped\N{\c&H00F8BD38&}my{\c&H00FFFFFF&} watch spring!
+Dialogue: 0,0:00:19.50,0:00:19.84,Default,,0,0,0,,No! You snapped\Nmy {\c&H00F8BD38&}watch{\c&H00FFFFFF&} spring!
+Dialogue: 0,0:00:19.84,0:00:20.23,Default,,0,0,0,,No! You snapped\Nmy watch {\c&H00F8BD38&}spring!{\c&H00FFFFFF&}
+Dialogue: 0,0:00:20.62,0:00:20.80,Default,,0,0,0,,{\c&H00F8BD38&}Yet{\c&H00FFFFFF&} Hooke's tiny\Nspiral hairspring
+Dialogue: 0,0:00:20.80,0:00:21.14,Default,,0,0,0,,Yet {\c&H00F8BD38&}Hooke's{\c&H00FFFFFF&} tiny\Nspiral hairspring
+Dialogue: 0,0:00:21.14,0:00:21.37,Default,,0,0,0,,Yet Hooke's {\c&H00F8BD38&}tiny{\c&H00FFFFFF&}\Nspiral hairspring
+Dialogue: 0,0:00:21.37,0:00:21.72,Default,,0,0,0,,Yet Hooke's tiny\N{\c&H00F8BD38&}spiral{\c&H00FFFFFF&} hairspring
+Dialogue: 0,0:00:21.72,0:00:22.29,Default,,0,0,0,,Yet Hooke's tiny\Nspiral {\c&H00F8BD38&}hairspring{\c&H00FFFFFF&}
+Dialogue: 0,0:00:22.29,0:00:22.58,Default,,0,0,0,,{\c&H00F8BD38&}tamed{\c&H00FFFFFF&} the pocket watch—
+Dialogue: 0,0:00:22.58,0:00:22.75,Default,,0,0,0,,tamed {\c&H00F8BD38&}the{\c&H00FFFFFF&} pocket watch—
+Dialogue: 0,0:00:22.75,0:00:23.10,Default,,0,0,0,,tamed the {\c&H00F8BD38&}pocket{\c&H00FFFFFF&} watch—
+Dialogue: 0,0:00:23.10,0:00:23.39,Default,,0,0,0,,tamed the pocket {\c&H00F8BD38&}watch—{\c&H00FFFFFF&}
+Dialogue: 0,0:00:23.39,0:00:23.90,Default,,0,0,0,,{\c&H00F8BD38&}shrinking{\c&H00FFFFFF&} clocks to\Nfit your palm!
+Dialogue: 0,0:00:23.90,0:00:24.25,Default,,0,0,0,,shrinking {\c&H00F8BD38&}clocks{\c&H00FFFFFF&} to\Nfit your palm!
+Dialogue: 0,0:00:24.25,0:00:24.36,Default,,0,0,0,,shrinking clocks {\c&H00F8BD38&}to{\c&H00FFFFFF&}\Nfit your palm!
+Dialogue: 0,0:00:24.36,0:00:24.54,Default,,0,0,0,,shrinking clocks to\N{\c&H00F8BD38&}fit{\c&H00FFFFFF&} your palm!
+Dialogue: 0,0:00:24.54,0:00:24.77,Default,,0,0,0,,shrinking clocks to\Nfit {\c&H00F8BD38&}your{\c&H00FFFFFF&} palm!
+Dialogue: 0,0:00:24.77,0:00:25.00,Default,,0,0,0,,shrinking clocks to\Nfit your {\c&H00F8BD38&}palm!{\c&H00FFFFFF&}
+Dialogue: 0,0:00:25.62,0:00:25.81,Default,,0,0,0,,{\c&H00F8BD38&}Car{\c&H00FFFFFF&} shocks,
+Dialogue: 0,0:00:25.81,0:00:26.17,Default,,0,0,0,,Car {\c&H00F8BD38&}shocks,{\c&H00FFFFFF&}
+Dialogue: 0,0:00:26.17,0:00:26.84,Default,,0,0,0,,{\c&H00F8BD38&}skyscrapers,{\c&H00FFFFFF&} even DNA\Ncoils today—
+Dialogue: 0,0:00:26.84,0:00:27.09,Default,,0,0,0,,skyscrapers, {\c&H00F8BD38&}even{\c&H00FFFFFF&} DNA\Ncoils today—
+Dialogue: 0,0:00:27.09,0:00:27.27,Default,,0,0,0,,skyscrapers, even {\c&H00F8BD38&}DNA{\c&H00FFFFFF&}\Ncoils today—
+Dialogue: 0,0:00:27.27,0:00:27.57,Default,,0,0,0,,skyscrapers, even DNA\N{\c&H00F8BD38&}coils{\c&H00FFFFFF&} today—
+Dialogue: 0,0:00:27.57,0:00:27.88,Default,,0,0,0,,skyscrapers, even DNA\Ncoils {\c&H00F8BD38&}today—{\c&H00FFFFFF&}
+Dialogue: 0,0:00:27.88,0:00:28.06,Default,,0,0,0,,{\c&H00F8BD38&}all{\c&H00FFFFFF&} obey Robert\NHooke's law.
+Dialogue: 0,0:00:28.06,0:00:28.30,Default,,0,0,0,,all {\c&H00F8BD38&}obey{\c&H00FFFFFF&} Robert\NHooke's law.
+Dialogue: 0,0:00:28.30,0:00:28.67,Default,,0,0,0,,all obey {\c&H00F8BD38&}Robert{\c&H00FFFFFF&}\NHooke's law.
+Dialogue: 0,0:00:28.67,0:00:29.04,Default,,0,0,0,,all obey Robert\N{\c&H00F8BD38&}Hooke's{\c&H00FFFFFF&} law.
+Dialogue: 0,0:00:29.04,0:00:29.22,Default,,0,0,0,,all obey Robert\NHooke's {\c&H00F8BD38&}law.{\c&H00FFFFFF&}

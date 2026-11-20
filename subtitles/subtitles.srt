@@ -1,31 +1,31 @@
 1
-00:00:00,175 --> 00:00:04,104
-Pull a metal spring twice as far—and it pulls back twice as hard.
+00:00:00,175 --> 00:00:03,870
+Hang one weight on a spring, it stretches. Double the weight—it stretches twice as far!
 
 2
-00:00:04,575 --> 00:00:06,845
-A scrambled riddle? Prove your hidden law!
+00:00:04,575 --> 00:00:06,653
+Scrambled Latin letters, Hooke? Explain your hidden law!
 
 3
 00:00:07,125 --> 00:00:09,268
-As the stretch, so the force—F equals minus k x!
+More stretch means more pullback—F equals minus k x!
 
 4
-00:00:09,625 --> 00:00:14,983
-With his brass microscope, Robert Hooke peered into cork—and named its honeycomb rooms 'cells'!
+00:00:09,625 --> 00:00:14,986
+Next, Hooke aimed his brass microscope at cork—and named those tiny honeycomb rooms 'cells'!
 
 5
-00:00:15,625 --> 00:00:18,222
-Push a spring past its elastic limit—and it snaps forever.
+00:00:15,625 --> 00:00:18,257
+Warning: stretch past the elastic limit, and metal deforms forever.
 
 6
-00:00:18,625 --> 00:00:20,061
-Hey—that ruined my watch!
+00:00:18,572 --> 00:00:20,235
+No! You snapped my watch spring!
 
 7
 00:00:20,625 --> 00:00:24,996
-Tame that tiny hairspring inside a balance wheel—and humanity mastered portable time.
+Yet Hooke's tiny spiral hairspring tamed the pocket watch—shrinking clocks to fit your palm!
 
 8
-00:00:25,625 --> 00:00:29,282
-Car suspensions, skyscrapers, even DNA strands today? Still obeying Hooke's law.
+00:00:25,625 --> 00:00:29,218
+Car shocks, skyscrapers, even DNA coils today—all obey Robert Hooke's law.

@@ -22,49 +22,49 @@
       "voice": "bm_lewis",
       "lang": "en-gb",
       "speed": 1.10,
-      "pan": -0.20
+      "pan": -0.22
     },
     "skeptic": {
       "voice": "am_michael",
       "lang": "en-us",
       "speed": 1.12,
-      "pan": 0.22
+      "pan": 0.24
     }
   },
   "beats": [
     {
       "id": "B1",
-      "name": "Hook: Twice the Pull, Twice the Force",
+      "name": "Hook: Hooke Demonstrates 1x -> 2x Spring Elasticity",
       "start": 0.0,
       "end": 4.5
     },
     {
       "id": "B2",
-      "name": "Secret Anagram Cipher & Hooke's Law F = -kx",
+      "name": "Rival Clash: Scrambled Cipher -> F = -kx",
       "start": 4.5,
       "end": 9.5
     },
     {
       "id": "B3",
-      "name": "Discovery Macro: 1665 Brass Microscope & Coining Cells",
+      "name": "Discovery Macro: Hooke's Microscope & Coining Cells",
       "start": 9.5,
       "end": 15.5
     },
     {
       "id": "B4",
-      "name": "Comedic Twist: Past the Elastic Limit — SNAP!",
+      "name": "Comedic Twist: Rival Overloads Spring Past Elastic Limit",
       "start": 15.5,
       "end": 20.5
     },
     {
       "id": "B5",
-      "name": "Mastery Climax: Pocket Watch Balance & Hairspring",
+      "name": "Mastery Climax: Hooke's Spiral Hairspring Pocket Watch",
       "start": 20.5,
       "end": 25.5
     },
     {
       "id": "B6",
-      "name": "Modern Legacy: Cars, Skyscrapers & DNA Springs",
+      "name": "Modern Legacy: Cars, Skyscrapers & DNA Coils",
       "start": 25.5,
       "end": 30.0
     }
@@ -75,8 +75,8 @@
       "beatId": "B1",
       "speaker": "narrator",
       "start": 0.15,
-      "end": 4.30,
-      "text": "Pull a metal spring twice as far—and it pulls back twice as hard."
+      "end": 4.35,
+      "text": "Hang one weight on a spring, it stretches. Double the weight—it stretches twice as far!"
     },
     {
       "id": "L2",
@@ -84,7 +84,7 @@
       "speaker": "skeptic",
       "start": 4.55,
       "end": 6.95,
-      "text": "A scrambled riddle? Prove your hidden law!"
+      "text": "Scrambled Latin letters, Hooke? Explain your hidden law!"
     },
     {
       "id": "L3",
@@ -92,7 +92,7 @@
       "speaker": "hooke",
       "start": 7.10,
       "end": 9.38,
-      "text": "As the stretch, so the force—F equals minus k x!"
+      "text": "More stretch means more pullback—F equals minus k x!"
     },
     {
       "id": "L4",
@@ -100,23 +100,23 @@
       "speaker": "narrator",
       "start": 9.60,
       "end": 15.30,
-      "text": "With his brass microscope, Robert Hooke peered into cork—and named its honeycomb rooms 'cells'!"
+      "text": "Next, Hooke aimed his brass microscope at cork—and named those tiny honeycomb rooms 'cells'!"
     },
     {
       "id": "L5",
       "beatId": "B4",
       "speaker": "narrator",
       "start": 15.60,
-      "end": 18.45,
-      "text": "Push a spring past its elastic limit—and it snaps forever."
+      "end": 18.40,
+      "text": "Warning: stretch past the elastic limit, and metal deforms forever."
     },
     {
       "id": "L6",
       "beatId": "B4",
       "speaker": "skeptic",
-      "start": 18.60,
+      "start": 18.55,
       "end": 20.30,
-      "text": "Hey—that ruined my watch!"
+      "text": "No! You snapped my watch spring!"
     },
     {
       "id": "L7",
@@ -124,7 +124,7 @@
       "speaker": "narrator",
       "start": 20.60,
       "end": 25.25,
-      "text": "Tame that tiny hairspring inside a balance wheel—and humanity mastered portable time."
+      "text": "Yet Hooke's tiny spiral hairspring tamed the pocket watch—shrinking clocks to fit your palm!"
     },
     {
       "id": "L8",
@@ -132,7 +132,7 @@
       "speaker": "narrator",
       "start": 25.60,
       "end": 29.60,
-      "text": "Car suspensions, skyscrapers, even DNA strands today? Still obeying Hooke's law."
+      "text": "Car shocks, skyscrapers, even DNA coils today—all obey Robert Hooke's law."
     }
   ],
   "sfx": [
