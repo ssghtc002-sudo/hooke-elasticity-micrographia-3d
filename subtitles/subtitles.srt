@@ -1,0 +1,31 @@
+1
+00:00:00,175 --> 00:00:04,104
+Pull a metal spring twice as far—and it pulls back twice as hard.
+
+2
+00:00:04,575 --> 00:00:06,845
+A scrambled riddle? Prove your hidden law!
+
+3
+00:00:07,125 --> 00:00:09,268
+As the stretch, so the force—F equals minus k x!
+
+4
+00:00:09,625 --> 00:00:14,983
+With his brass microscope, Robert Hooke peered into cork—and named its honeycomb rooms 'cells'!
+
+5
+00:00:15,625 --> 00:00:18,222
+Push a spring past its elastic limit—and it snaps forever.
+
+6
+00:00:18,625 --> 00:00:20,061
+Hey—that ruined my watch!
+
+7
+00:00:20,625 --> 00:00:24,996
+Tame that tiny hairspring inside a balance wheel—and humanity mastered portable time.
+
+8
+00:00:25,625 --> 00:00:29,282
+Car suspensions, skyscrapers, even DNA strands today? Still obeying Hooke's law.

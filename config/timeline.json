@@ -1,0 +1,164 @@
+{
+  "title": "Robert Hooke — Springs, Secret Riddles & The Discovery of Cells (1665)",
+  "scientistNumber": 8,
+  "duration": 30.0,
+  "fps": 24,
+  "totalFrames": 720,
+  "resolution": [1080, 1920],
+  "audio": {
+    "masterPath": "audio/output/master_audio.wav",
+    "manifestPath": "audio/output/voice_manifest.json",
+    "srtPath": "subtitles/subtitles.srt",
+    "assPath": "subtitles/subtitles.ass"
+  },
+  "speakers": {
+    "narrator": {
+      "voice": "bm_george",
+      "lang": "en-gb",
+      "speed": 1.12,
+      "pan": 0.0
+    },
+    "hooke": {
+      "voice": "bm_lewis",
+      "lang": "en-gb",
+      "speed": 1.10,
+      "pan": -0.20
+    },
+    "skeptic": {
+      "voice": "am_michael",
+      "lang": "en-us",
+      "speed": 1.12,
+      "pan": 0.22
+    }
+  },
+  "beats": [
+    {
+      "id": "B1",
+      "name": "Hook: Twice the Pull, Twice the Force",
+      "start": 0.0,
+      "end": 4.5
+    },
+    {
+      "id": "B2",
+      "name": "Secret Anagram Cipher & Hooke's Law F = -kx",
+      "start": 4.5,
+      "end": 9.5
+    },
+    {
+      "id": "B3",
+      "name": "Discovery Macro: 1665 Brass Microscope & Coining Cells",
+      "start": 9.5,
+      "end": 15.5
+    },
+    {
+      "id": "B4",
+      "name": "Comedic Twist: Past the Elastic Limit — SNAP!",
+      "start": 15.5,
+      "end": 20.5
+    },
+    {
+      "id": "B5",
+      "name": "Mastery Climax: Pocket Watch Balance & Hairspring",
+      "start": 20.5,
+      "end": 25.5
+    },
+    {
+      "id": "B6",
+      "name": "Modern Legacy: Cars, Skyscrapers & DNA Springs",
+      "start": 25.5,
+      "end": 30.0
+    }
+  ],
+  "dialogue": [
+    {
+      "id": "L1",
+      "beatId": "B1",
+      "speaker": "narrator",
+      "start": 0.15,
+      "end": 4.30,
+      "text": "Pull a metal spring twice as far—and it pulls back twice as hard."
+    },
+    {
+      "id": "L2",
+      "beatId": "B2",
+      "speaker": "skeptic",
+      "start": 4.55,
+      "end": 6.95,
+      "text": "A scrambled riddle? Prove your hidden law!"
+    },
+    {
+      "id": "L3",
+      "beatId": "B2",
+      "speaker": "hooke",
+      "start": 7.10,
+      "end": 9.38,
+      "text": "As the stretch, so the force—F equals minus k x!"
+    },
+    {
+      "id": "L4",
+      "beatId": "B3",
+      "speaker": "narrator",
+      "start": 9.60,
+      "end": 15.30,
+      "text": "With his brass microscope, Robert Hooke peered into cork—and named its honeycomb rooms 'cells'!"
+    },
+    {
+      "id": "L5",
+      "beatId": "B4",
+      "speaker": "narrator",
+      "start": 15.60,
+      "end": 18.45,
+      "text": "Push a spring past its elastic limit—and it snaps forever."
+    },
+    {
+      "id": "L6",
+      "beatId": "B4",
+      "speaker": "skeptic",
+      "start": 18.60,
+      "end": 20.30,
+      "text": "Hey—that ruined my watch!"
+    },
+    {
+      "id": "L7",
+      "beatId": "B5",
+      "speaker": "narrator",
+      "start": 20.60,
+      "end": 25.25,
+      "text": "Tame that tiny hairspring inside a balance wheel—and humanity mastered portable time."
+    },
+    {
+      "id": "L8",
+      "beatId": "B6",
+      "speaker": "narrator",
+      "start": 25.60,
+      "end": 29.60,
+      "text": "Car suspensions, skyscrapers, even DNA strands today? Still obeying Hooke's law."
+    }
+  ],
+  "sfx": [
+    { "t": 0.28, "type": "brass_weight_clank", "pan": -0.25 },
+    { "t": 0.95, "type": "spring_stretch_boing", "pan": -0.20 },
+    { "t": 2.35, "type": "brass_weight_clank", "pan": -0.22 },
+    { "t": 2.85, "type": "spring_stretch_boing", "pan": -0.15 },
+    { "t": 4.45, "type": "whip_whoosh", "pan": 0.18 },
+    { "t": 5.20, "type": "cipher_lock_click", "pan": 0.25 },
+    { "t": 6.45, "type": "cipher_lock_click", "pan": 0.12 },
+    { "t": 7.25, "type": "formula_brass_chime", "pan": -0.10 },
+    { "t": 8.45, "type": "spring_bounce_ring", "pan": -0.20 },
+    { "t": 9.45, "type": "whip_whoosh", "pan": -0.22 },
+    { "t": 10.35, "type": "microscope_focus_click", "pan": -0.15 },
+    { "t": 11.75, "type": "cork_cell_bloom", "pan": 0.0 },
+    { "t": 13.40, "type": "cork_cell_shimmer", "pan": 0.18 },
+    { "t": 14.55, "type": "cork_cell_shimmer", "pan": -0.18 },
+    { "t": 15.45, "type": "whip_whoosh", "pan": 0.25 },
+    { "t": 16.20, "type": "heavy_weight_drop", "pan": 0.20 },
+    { "t": 16.85, "type": "metal_strain_creak", "pan": 0.22 },
+    { "t": 17.65, "type": "spring_overload_snap", "pan": 0.25 },
+    { "t": 18.70, "type": "watch_parts_clatter", "pan": 0.30 },
+    { "t": 20.45, "type": "whip_whoosh", "pan": 0.0 },
+    { "t": 21.10, "type": "watch_escapement_chime", "pan": -0.15 },
+    { "t": 23.00, "type": "balance_wheel_hum", "pan": 0.0 },
+    { "t": 25.45, "type": "whip_whoosh", "pan": -0.15 },
+    { "t": 26.80, "type": "dna_harmonic_pulse", "pan": 0.15 }
+  ]
+}
