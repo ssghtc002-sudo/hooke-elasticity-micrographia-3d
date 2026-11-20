@@ -101,40 +101,40 @@ def project(cam_pos, tgt, lens_mm, pt):
 
 checks = [
     (0, 2.6, "Beat 1 Hooke(L) + Spring(R)", {
-        "HookeHead": np.array([-1.24, 0.50, 0.74]),
+        "HookeHead": np.array([-1.24, 0.50, 0.67]),
         "SpringCenter": np.array([RIG_X + 0.06, RIG_Y, 0.44]),
         "RulerRight": np.array([RIG_X + 0.22, RIG_Y, 0.36]),
     }, [("HookeHead", "SpringCenter", 0.42)]),
     (1, 6.2, "Beat 2a Rival(R) + Cipher(L-Center)", {
-        "RivalHead": np.array([0.46, 0.52, 0.76]),
+        "RivalHead": np.array([0.46, 0.52, 0.69]),
         "CipherText": np.array([FOLIO_POS[0], FOLIO_POS[1], 0.26]),
     }, [("RivalHead", "CipherText", 0.40)]),
     (1, 8.5, "Beat 2b Hooke(L) + Rival(R) + F=-kx(C)", {
-        "HookeHead": np.array([-0.44, 0.52, 0.74]),
-        "RivalHead": np.array([0.46, 0.52, 0.76]),
+        "HookeHead": np.array([-0.44, 0.52, 0.67]),
+        "RivalHead": np.array([0.46, 0.52, 0.69]),
         "Formula": np.array([FOLIO_POS[0], FOLIO_POS[1], 0.28]),
     }, [("HookeHead", "RivalHead", 0.60), ("HookeHead", "Formula", 0.30)]),
     (2, 12.8, "Beat 3 Microscope/Cells(L) + Hooke(R)", {
-        "HookeHead": np.array([-1.16, 0.50, 0.74]),
+        "HookeHead": np.array([-1.16, 0.50, 0.67]),
         "MicLeft": np.array([MIC_POS[0] - 0.08, MIC_POS[1], 0.22]),
         "CorkCells": np.array([MIC_POS[0] + 0.02, MIC_POS[1], 0.46]),
     }, [("HookeHead", "CorkCells", 0.42)]),
     (3, 17.8, "Beat 4 Rival(L) + OverloadSnap(R)", {
-        "RivalHead": np.array([0.92, 0.50, 0.76]),
+        "RivalHead": np.array([0.92, 0.50, 0.69]),
         "OverSpring": np.array([OVER_X - 0.04, OVER_Y, 0.42]),
         "OverPost": np.array([OVER_X + 0.13, OVER_Y, 0.44]),
     }, [("RivalHead", "OverSpring", 0.42)]),
     (4, 23.2, "Beat 5 Hooke(L) + PocketWatch(R)", {
-        "HookeHead": np.array([-0.26, 0.50, 0.74]),
+        "HookeHead": np.array([-0.26, 0.50, 0.67]),
         "WatchCenter": np.array([WATCH_POS[0], WATCH_POS[1], WATCH_POS[2]]),
         "WatchRight": np.array([WATCH_POS[0] + 0.24, WATCH_POS[1], WATCH_POS[2]]),
     }, [("HookeHead", "WatchCenter", 0.42)]),
     (5, 28.2, "Beat 6 Grand Cast Finale", {
-        "HookeHead": np.array([-0.50, 0.56, 0.74]),
-        "RivalHead": np.array([0.58, 0.56, 0.76]),
+        "HookeHead": np.array([-0.50, 0.56, 0.67]),
+        "RivalHead": np.array([0.58, 0.56, 0.69]),
         "WatchCenter": np.array([0.08, 0.02, 0.30]),
         "DNATop": np.array([0.00, 0.08, 1.15]),
-        "TitleRight": np.array([0.42, 0.56, 1.32]),
+        "TitleRight": np.array([0.42, 0.56, 1.52]),
     }, [("HookeHead", "RivalHead", 0.60), ("HookeHead", "WatchCenter", 0.30)]),
 ]
 

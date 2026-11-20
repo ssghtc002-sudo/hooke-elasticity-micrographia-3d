@@ -37,7 +37,7 @@ from mathutils import Euler, Quaternion, Vector
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
-from mpfb_characters import create_realistic_scientist, set_bone_char_rot
+from mpfb_characters import apply_facial_acting, create_realistic_scientist, set_bone_char_rot
 
 
 # ============================================================================
@@ -161,8 +161,8 @@ scene.cycles.blur_glossy = 1.0
 scene.cycles.max_bounces = 4
 scene.cycles.transmission_bounces = 4
 scene.cycles.glossy_bounces = 2
-scene.cycles.diffuse_bounces = 1
-scene.cycles.transparent_max_bounces = 3
+scene.cycles.diffuse_bounces = 2
+scene.cycles.transparent_max_bounces = 14
 
 try:
     scene.view_settings.view_transform = "AgX"
@@ -625,9 +625,9 @@ bg.inputs["Strength"].default_value = 0.72
 # Polished Stuart Mahogany Workbench (top Z = 0.0, Y in [-0.54, +0.34] so 1.74m characters stand cleanly waist-high at Y=+0.50!)
 add_box("MahoganyBench", (0.0, -0.10, -0.06), (5.8, 0.88, 0.12), mahogany_mat, bevel_w=0.008)
 add_box("BenchBrassEdge", (0.0, -0.545, -0.022), (5.82, 0.028, 0.044), brass_mat, bevel_w=0.004)
-# Solid Paneled Mahogany Laboratory Cabinet Front (Z = -0.96..-0.12 -> ZERO dangling legs under bench!)
-FLOOR_Z = -0.96
-add_box("BenchCabinetBody", (0.0, -0.12, -0.54), (5.6, 0.80, 0.84), panel_wood_mat)
+# Solid Paneled Mahogany Laboratory Cabinet Front (Z = -1.04..-0.12 -> exact waist-high bench, ZERO thighs above table!)
+FLOOR_Z = -1.04
+add_box("BenchCabinetBody", (0.0, -0.12, -0.58), (5.6, 0.80, 0.92), panel_wood_mat)
 for dr_x in (-1.65, -0.82, 0.0, 0.82, 1.65):
     add_box(f"BenchDrawerPanel_{dr_x:.2f}", (dr_x, -0.525, -0.34), (0.68, 0.024, 0.34), mahogany_mat, bevel_w=0.006)
     add_torus(f"BenchDrawerPull_{dr_x:.2f}", (dr_x, -0.545, -0.34), 0.032, 0.006, brass_mat, rot=(math.pi * 0.5, 0, 0))
@@ -939,7 +939,7 @@ title_txt.data.materials.append(title_gold_mat)
 
 
 # ============================================================================
-# 11B. REALISTIC MPFB2 ANATOMICAL HUMAN CAST (ROBERT HOOKE & RIVAL WATCHMAKER)
+# 11B. REALISTIC MPFB2 V4 (@ZACKDFILMS-GRADE) 4K PHOTO-SCANNED HUMAN CAST!
 # ============================================================================
 HOOKE_ACTOR = None
 RIVAL_ACTOR = None
@@ -951,17 +951,27 @@ try:
         yaw_deg=-18.0,
         cfg={
             "age": 0.58,
-            "muscle": 0.52,
-            "weight": 0.46,
+            "muscle": 0.54,
+            "weight": 0.48,
             "height": 0.55,
-            "skin_rgb": (0.68, 0.43, 0.31),  # Natural warm filmic skin (zero washed-out paleness!)
-            "coat_rgb": (0.025, 0.14, 0.095), # Rich Royal Society Forest-Emerald 3D Velvet Coat
-            "iris_rgb": (0.14, 0.34, 0.18),   # Expressive hazel-emerald eyes
-            "hair_rgb": (0.065, 0.036, 0.020),# Shoulder-length dark chestnut Stuart curls
-            "style": "curls",
-            "mustache": False,
+            "skin_assets": ["middleage_caucasian_male.mhmat", "young_caucasian_male.mhmat"],
+            "iris_major_rgb": (0.16, 0.38, 0.22),
+            "iris_minor_rgb": (0.06, 0.16, 0.08),
+            "eyebrow_assets": ["eyebrow002.mhclo", "eyebrow001.mhclo"],
+            "hair_assets": ["punkduck_alpha7_curly.mhclo", "punkduck_alpha7_long.mhclo", "long01.mhclo", "bob01.mhclo"],
+            "hair_tint_rgb": (0.45, 0.26, 0.15),
+            "hair_tint_fac": 0.40,
+            "brow_tint_fac": 0.50,
+            "silver_hair": False,
+            "suit_assets": [
+                "toigo_male_double-breasted_suit.mhclo",
+                "male_elegantsuit01.mhclo",
+                "male_casualsuit01.mhclo",
+            ],
+            "suit_tint_rgb": (0.45, 0.72, 0.58),  # Subtle Royal Society deep forest-emerald wool grade
+            "suit_tint_fac": 0.45,
+            "shoe_assets": ["shoes01.mhclo", "shoes02.mhclo"],
         },
-        brass_mat=brass_mat,
     )
     RIVAL_ACTOR = create_realistic_scientist(
         name="RivalWatchmaker",
@@ -969,55 +979,68 @@ try:
         start_xy=(0.46, 0.52),
         yaw_deg=22.0,
         cfg={
-            "age": 0.78,
-            "muscle": 0.56,
+            "age": 0.82,
+            "muscle": 0.54,
             "weight": 0.58,
             "height": 0.58,
-            "skin_rgb": (0.70, 0.45, 0.34),   # Warm elder complexion
-            "coat_rgb": (0.28, 0.032, 0.052), # Rich Royal Burgundy 3D Velvet Coat
-            "iris_rgb": (0.14, 0.32, 0.52),   # Sharp icy-blue eyes
-            "hair_rgb": (0.66, 0.64, 0.60),   # Powdered silver Royal Society wig
-            "style": "wig",
-            "mustache": True,
+            "skin_assets": ["old_caucasian_male.mhmat", "middleage_caucasian_male.mhmat"],
+            "iris_major_rgb": (0.18, 0.44, 0.72),
+            "iris_minor_rgb": (0.08, 0.18, 0.34),
+            "eyebrow_assets": ["eyebrow005.mhclo", "eyebrow003.mhclo"],
+            "hair_assets": ["grinsegold_wig_bow_tie.mhclo", "bob02.mhclo", "short02.mhclo"],
+            "beard_assets": ["grinsegold_beard_sigmund_wip.mhclo", "rehmanpolanski_moustache_viking.mhclo"],
+            "silver_hair": True,
+            "silver_hair_main": False,  # grinsegold_wig_bow_tie is natively powdered white!
+            "suit_assets": [
+                "toigo_suit_with_dinner_jacket.mhclo",
+                "toigo_male_suit_tie_and_jacket.mhclo",
+                "male_elegantsuit01.mhclo",
+            ],
+            "suit_tint_rgb": (0.78, 0.42, 0.48),  # Subtle Royal Burgundy gentleman's formal coat grade
+            "suit_tint_fac": 0.48,
+            "shoe_assets": ["shoes02.mhclo", "shoes01.mhclo"],
         },
-        brass_mat=brass_mat,
     )
 except Exception as mpfb_err:
-    print(f"[MPFB2 Warning] Skipping human cast ({mpfb_err}) — install MPFB2 extension in Cell 2!")
+    print(f"[MPFB2 Warning] Skipping human cast ({mpfb_err}) — install MPFB2 & packs in Cell 2!")
 
 
 # ============================================================================
-# 12. WARM LONDON CHIAROSCURO 4-LIGHT RIG + TRUE HORIZONTAL-FIT 9:16 CAMERA
+# 12. REMBRANDT 3-POINT CINEMA PORTRAIT LIGHTING + TRUE HORIZONTAL 9:16 CAMERA
 # ============================================================================
-# Warm Amber Oil-Lamp Key Area Light (sculpts realistic cheekbones, velvet folds & brass!)
-bpy.ops.object.light_add(type="AREA", location=(-1.85, -1.75, 1.65))
+# Warm Amber Oil-Lamp Rembrandt Key Area Light (sculpts photoreal skin pores, cheekbones & suit folds!)
+bpy.ops.object.light_add(type="AREA", location=(-1.95, -1.65, 1.72))
 key_light = bpy.context.active_object
-key_light.data.energy = 260.0
-key_light.data.size = 1.35
-key_light.data.color = (1.0, 0.78, 0.50)
-key_light.rotation_euler = Euler((math.radians(54), 0.0, math.radians(-38)))
+key_light.data.energy = 295.0
+key_light.data.size = 1.25
+key_light.data.color = (1.0, 0.78, 0.52)
+key_light.rotation_euler = Euler((math.radians(52), 0.0, math.radians(-42)))
+key_light.visible_camera = False
 
-# Cool London Teal-Sapphire Twilight Rim Light separating hair, velvet shoulders & brass edges cleanly!
-bpy.ops.object.light_add(type="AREA", location=(1.40, 2.35, 2.05))
+# Cool London Sapphire Moonlight Rim Light (crisp backlit halo along alpha hair strands & wool shoulders!)
+bpy.ops.object.light_add(type="AREA", location=(1.45, 2.35, 2.08))
 rim_light = bpy.context.active_object
-rim_light.data.energy = 320.0
-rim_light.data.size = 1.6
-rim_light.data.color = (0.38, 0.80, 1.0)
+rim_light.data.energy = 360.0
+rim_light.data.size = 1.60
+rim_light.data.color = (0.42, 0.80, 1.0)
 rim_light.rotation_euler = Euler((math.radians(58), 0.0, math.radians(146)))
+rim_light.visible_camera = False
 
-# Warm Royal Society Portrait Fill / Wall-Wash covering full 5.8m bench width evenly!
-bpy.ops.object.light_add(type="AREA", location=(0.20, -1.55, 1.55))
+# Soft Warm Cinema Fill (low ratio so faces have real filmic shadow depth instead of flat front light!)
+bpy.ops.object.light_add(type="AREA", location=(0.85, -1.65, 1.48))
 wall_wash = bpy.context.active_object
-wall_wash.data.energy = 135.0
-wall_wash.data.size = 2.40
-wall_wash.data.color = (1.0, 0.84, 0.64)
-wall_wash.rotation_euler = Euler((math.radians(66), 0.0, math.radians(16)))
+wall_wash.data.energy = 68.0
+wall_wash.data.size = 2.20
+wall_wash.data.color = (0.94, 0.86, 0.78)
+wall_wash.rotation_euler = Euler((math.radians(66), 0.0, math.radians(24)))
+wall_wash.visible_camera = False
 
-# Crisp Eye Catchlight & Precision Instrument Sparkle Fill
-bpy.ops.object.light_add(type="POINT", location=(0.0, -0.75, 0.72))
+# Subtle Wet-Cornea Eye Catchlight & Precision Instrument Sparkle
+bpy.ops.object.light_add(type="POINT", location=(0.0, -0.82, 0.68))
 fill_accent = bpy.context.active_object
-fill_accent.data.energy = 26.0
-fill_accent.data.color = (0.68, 0.90, 1.0)
+fill_accent.data.energy = 22.0
+fill_accent.data.color = (0.86, 0.94, 1.0)
+fill_accent.visible_camera = False
 
 bpy.ops.object.empty_add(location=(0.0, 0.0, 0.44))
 cam_target = bpy.context.active_object
@@ -1339,7 +1362,12 @@ for f in range(1, TOTAL_FRAMES + 1):
         set_bone_char_rot(hrig, "spine01", lean_x * 0.55, 0.0, 0.0, frame=f)
         set_bone_char_rot(hrig, "neck01", head_rx * 0.35, 0.0, head_rz * 0.35, frame=f)
         set_bone_char_rot(hrig, "head", head_rx * 0.65, 0.0, head_rz * 0.65, frame=f)
-        set_bone_char_rot(hrig, "jaw", 1.5 + h_lip * 16.5, 0.0, 0.0, frame=f)
+        # Lifelike blinking, brow acting (wonder in Beat 3, confident smile in Beats 2/5/6) & Kokoro lip-sync!
+        h_brow = 0.85 if 11.2 <= t < 15.5 else (0.45 if t >= 20.5 else 0.15)
+        h_smile = 0.65 if (7.2 <= t < 9.5 or t >= 20.5) else (0.35 if 11.2 <= t < 15.5 else 0.15)
+        apply_facial_acting(
+            hrig, t, f, jaw_open_deg=1.0 + h_lip * 16.5, brow_lift=h_brow, smile=h_smile, blink_period=3.1, blink_phase=0.6
+        )
         set_bone_char_rot(hrig, "upperarm01.R", *ua_r, frame=f)
         set_bone_char_rot(hrig, "lowerarm01.R", *la_r, frame=f)
         set_bone_char_rot(hrig, "upperarm01.L", *ua_l, frame=f)
@@ -1356,7 +1384,7 @@ for f in range(1, TOTAL_FRAMES + 1):
             lean_x, head_rx, head_rz = 2.0, 4.0, 12.0
             ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
             ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
-            jaw_bias = 0.0
+            jaw_bias, r_brow, r_smile = 0.0, -0.2, 0.0
         elif t < 9.5:
             # Beat 2: Rival RIGHT (X=+0.46) gesturing skeptically with RIGHT hand at Cipher -> amazed at F=-kx!
             rx_p, ry_p, ryaw = 0.46, 0.52, 22.0
@@ -1368,13 +1396,15 @@ for f in range(1, TOTAL_FRAMES + 1):
             ua_l = (-10.0, 30.0, -18.0)
             la_l = (-24.0, 0.0, -30.0)
             jaw_bias = 0.0
+            r_brow = lerp(0.85, -0.65, sk)  # Furrowed skeptic -> surprised brow lift when F=-kx appears!
+            r_smile = lerp(0.10, -0.25, sk)
         elif t < 15.5:
             # Beat 3: Off-camera right during Hooke's Microscope beat
             rx_p, ry_p, ryaw = 0.92, 0.54, 14.0
             lean_x, head_rx, head_rz = 3.0, 5.0, 10.0
             ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
             ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
-            jaw_bias = 0.0
+            jaw_bias, r_brow, r_smile = 0.0, -0.2, 0.0
         elif t < 20.5:
             # Beat 4: Rival cleanly LEFT (X=+0.92) of Overload Spring (X=+1.42) -> NATURAL DEFENSIVE SHOCK RECOIL!
             shock = smoothstep(17.62, 17.85, t)
@@ -1382,19 +1412,20 @@ for f in range(1, TOTAL_FRAMES + 1):
             rx_p, ry_p, ryaw = 0.92 - shock * 0.06, 0.50 + shock * 0.08, -18.0
             lean_x = lerp(7.0, -11.0, shock) + recoil_osc
             head_rx, head_rz = lerp(8.0, -10.0, shock), lerp(-14.0, -8.0, shock) + math.sin(t * 6.0) * 4.0 * shock
-            # Natural defensive chest-level recoil hands (elbows tucked cleanly at ribs, NEVER zombie arms overhead!)
             ua_l = (lerp(-22.0, -28.0, shock), lerp(24.0, 24.0, shock), lerp(-30.0, -34.0, shock))
             la_l = (lerp(-26.0, -46.0, shock), 0.0, lerp(-18.0, -34.0, shock))
             ua_r = (lerp(-10.0, -28.0, shock), lerp(-30.0, -24.0, shock), lerp(18.0, 34.0, shock))
             la_r = (lerp(-24.0, -46.0, shock), 0.0, lerp(30.0, 34.0, shock))
             jaw_bias = 12.0 * shock * (1.0 - smoothstep(18.6, 19.3, t))
+            r_brow = lerp(-0.35, 1.0, shock)  # Smug squint -> wide-eyed SHOCK brow lift!
+            r_smile = lerp(0.35, -0.45, shock)
         elif t < 25.5:
             # Beat 5: Off-camera right during Hooke's Pocket Watch showcase
             rx_p, ry_p, ryaw = 1.35, 0.56, 18.0
             lean_x, head_rx, head_rz = 2.0, 4.0, 14.0
             ua_l, la_l = (-8.0, 32.0, -16.0), (-22.0, 0.0, -32.0)
             ua_r, la_r = (-8.0, -32.0, 16.0), (-22.0, 0.0, 32.0)
-            jaw_bias = 0.0
+            jaw_bias, r_brow, r_smile = 0.0, 0.2, 0.1
         else:
             # Beat 6: Grand Finale — Rival amazed RIGHT (X=+0.58) flanking Watch & DNA Spring!
             rx_p, ry_p, ryaw = 0.58, 0.56, 16.0
@@ -1404,7 +1435,7 @@ for f in range(1, TOTAL_FRAMES + 1):
             la_r = (-28.0, 0.0, 22.0)
             ua_l = (-12.0, 30.0, -20.0)
             la_l = (-24.0, 0.0, -28.0)
-            jaw_bias = 0.0
+            jaw_bias, r_brow, r_smile = 0.0, 0.55, 0.45
 
         rrig.location = Vector((rx_p, ry_p, r_base_z))
         rrig.rotation_euler = Euler((0.0, 0.0, math.radians(ryaw)))
@@ -1415,7 +1446,16 @@ for f in range(1, TOTAL_FRAMES + 1):
         set_bone_char_rot(rrig, "spine01", lean_x * 0.55, 0.0, 0.0, frame=f)
         set_bone_char_rot(rrig, "neck01", head_rx * 0.35, 0.0, head_rz * 0.35, frame=f)
         set_bone_char_rot(rrig, "head", head_rx * 0.65, 0.0, head_rz * 0.65, frame=f)
-        set_bone_char_rot(rrig, "jaw", max(jaw_bias, 1.5 + r_lip * 17.0), 0.0, 0.0, frame=f)
+        apply_facial_acting(
+            rrig,
+            t,
+            f,
+            jaw_open_deg=max(jaw_bias, 1.0 + r_lip * 17.0),
+            brow_lift=r_brow,
+            smile=r_smile,
+            blink_period=3.5,
+            blink_phase=1.9,
+        )
         set_bone_char_rot(rrig, "upperarm01.L", *ua_l, frame=f)
         set_bone_char_rot(rrig, "lowerarm01.L", *la_l, frame=f)
         set_bone_char_rot(rrig, "upperarm01.R", *ua_r, frame=f)
